@@ -1,0 +1,5058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dina's Portfolio</title>
+    
+    <link rel="stylesheet" href="https://use.typekit.net/pzh1aoe.css">
+    <link rel="stylesheet" href="https://use.typekit.net/pzh1aoe.css">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/ladeebug16.png"> 
+    <link rel="icon" type="image/png" sizes="32x32" href="images/ladeebug32.png"> 
+    <link rel="icon" type="image/png" sizes="192x192" href="images/ladeebug192.png"> 
+    <link rel="icon" type="image/png" sizes="512x512" href="images/ladeebug512.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "playfair-display", serif;
+            background: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Individual Section */
+        .section {
+            position: relative;
+            background: #D8D8D8;
+            transition: flex 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            cursor: pointer;
+            flex: 0 0 80px; /* Collapsed width */
+        }
+
+        .section:last-child {
+            border-right: none;
+        }
+
+        /* Expanded state */
+        .section.expanded {
+            flex: 1; /* Takes up remaining space */
+            cursor: default;
+        }
+
+        /* Collapsed Section Label (Vertical Text) */
+        .section-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            font-size: 1rem;
+            color: inherit;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .section.expanded .section-label {
+            opacity: 0;
+        }
+
+        /* Content Area (Only visible when expanded) */
+        .content {
+            opacity: 0;
+            padding: 60px;
+            height: 100%;
+            overflow-y: auto;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            --detail-space: 200px; /* resting-state gap when no popup is open — real height is measured and applied by JS once one opens, see updateDetailSpace() */
+        }
+
+        .section.expanded .content {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .content h1 {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: inherit;
+            font-weight: normal;
+        }
+
+        /* List Items (Projects / Writing / Documents) */
+        .list-item {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid currentColor;
+            padding: 25px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: inherit;
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(5px);
+        }
+
+        .list-item h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: inherit;
+        }
+
+        .list-item p {
+            font-size: 0.9rem;
+            color: inherit;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* ================= PROJECTS — gallery + case study ================= */
+
+        /* Gallery: a scrolling stack of summary cards. Clicking a card swaps
+           the whole panel over to that project's detail view (see below) —
+           it doesn't expand in place, since case studies carry too much
+           (images, video, long text) to sit comfortably inside a list row. */
+        /* Featured project: full-width, thumb-beside-info on desktop, so
+           the strongest piece reads as a deliberate opener rather than
+           just the first row of a list. Everything below it drops into a
+           denser grid — that size contrast IS the hierarchy signal. */
+        /* Featured project: full-width, thumb-beside-info on desktop, so
+           the strongest piece reads as a deliberate opener rather than
+           just the first row of a list. Everything below it drops into a
+           denser grid — that size contrast IS the hierarchy signal.
+
+           Card surface uses the same --card-* tokens as the grid cards
+           below (soft rounded surface + shadow instead of a hard outline)
+           so the featured piece and the grid read as one consistent
+           material, just at a different scale. --project-gap is shared
+           with .project-grid's gap so the space above/below the featured
+           card matches the rhythm between grid cards exactly, rather than
+           reading as an arbitrary extra-large gap. */
+        #galleryView {
+            --project-gap: 30px;
+            --card-border: rgba(65, 0, 20, 0.08);
+            --card-radius: 20px;
+            --thumb-radius: 14px;
+        }
+
+        .project-featured {
+            display: flex;
+            align-items: stretch;
+            gap: 32px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto var(--project-gap);
+            border: 1px solid var(--card-border);
+            --card-border: rgba(65, 0, 20, 0.08);
+            border-radius: var(--card-radius);
+            box-shadow: 0 8px 24px rgba(65, 0, 20, 0.07);
+            padding: 28px;
+            overflow: hidden;
+            cursor: pointer;
+            color: inherit;
+            transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-featured:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 38px rgba(65, 0, 20, 0.11);
+        }
+
+        .project-featured .project-thumb--featured {
+            width: 50%;
+            flex-shrink: 0;
+            min-height: 320px;
+            height: auto;
+
+            border-radius: var(--thumb-radius);
+
+            overflow: hidden;
+        }
+
+        .project-featured .project-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 24px 24px 24px 4px;
+        }
+
+        .project-featured .project-title {
+            font-size: 1.7rem;
+            line-height: 1.05;
+        }
+
+        .project-featured .project-desc {
+            font-size: 0.95rem;
+            line-height: 1.55;
+            margin-bottom: 24px;
+        }
+
+        /* Grid of the remaining projects — two columns on desktop, so six
+           projects read as a compact set rather than a long scroll. Shares
+           --project-gap with the featured card's bottom margin above. */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--project-gap);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .project-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            box-shadow: 0 1px 2px rgba(65, 0, 20, 0.04);
+            padding: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            color: inherit;
+            transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 30px rgba(65, 0, 20, 0.1);
+        }
+
+        /* Small running index — this set genuinely is an ordered gallery
+           (featured piece first, then reverse-chronological), so the
+           number carries real information about where a card sits in
+           that order, not just decoration. */
+        .project-index {
+            position: absolute;
+            top: 24px;
+            right: 26px;
+            z-index: 1;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            opacity: 0.4;
+        }
+
+        /* Placeholder thumbnail — an inset, rounded panel sitting inside
+           the card's own padding (rather than bleeding to the card edges),
+           which is what makes the card read as one soft object rather than
+           a bordered box. The gentle two-tone wash keeps an empty
+           placeholder feeling considered rather than broken; swap the
+           whole element for an <img> or <video> (object-fit: cover, same
+           height/radius) once real media exists — the wash and label text
+           can go. */
+        .project-thumb {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--thumb-radius);
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(65, 0, 20, 0.05), rgba(65, 0, 20, 0.14));
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0px;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: var(--thumb-radius);
+        }
+
+        .project-thumb--featured {
+            position: relative;
+
+            width: 44%;
+            aspect-ratio: 16 / 9;
+            height: auto;
+
+            min-height: 0;
+
+            flex-shrink: 0;
+
+            overflow: hidden;
+            border-radius: var(--thumb-radius);
+            padding: 0;
+
+            background: none;
+        }
+
+        .project-thumb--featured img,
+        .project-thumb--featured video {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+
+            display: block;
+
+            border-radius: var(--thumb-radius);
+        }
+
+        .project-thumb video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: var(--thumb-radius);
+        }
+
+        /* Slow, understated zoom on the thumbnail rather than the whole
+           card moving — reads as a considered detail instead of a bounce. */
+        .project-card:hover .project-thumb,
+        .project-featured:hover .project-thumb {
+            transform: scale(1.035);
+        }
+
+        .project-card:hover .project-thumb img,
+        .project-featured:hover .project-thumb img {
+            transform: scale(1.02);
+        }
+
+        /* Small ceremony marker for standout projects (capstones, awards,
+           etc.) — pin to a corner of the thumbnail. Optional; only add
+           .project-badge where it's actually warranted. */
+        .project-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 2;
+
+            background: rgba(255, 255, 255, 0.55);
+            color: #410014;
+
+            padding: 4px 9px;
+            border-radius: 20px;
+
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+
+            box-shadow: 0 4px 16px rgba(65, 0, 20, 0.08);
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 1;
+        }
+
+        .project-info {
+            flex: 1;
+            min-width: 0;
+            padding: 18px 10px 6px;
+        }
+
+        .project-meta {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 8px;
+        }
+
+        /* Titles move to the sans display face used elsewhere for headers
+           (about-me's big labels) rather than the body serif — a sharper,
+           more contemporary contrast against the still-serif description
+           text below it. */
+        .project-title {
+            font-family: "futura-pt", sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: 0.01em;
+            margin-bottom: 8px;
+        }
+
+        .project-desc {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            opacity: 0.85;
+            margin-bottom: 14px;
+        }
+
+        .project-featured .project-desc {
+            margin-bottom: 20px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tag {
+            background: rgba(65, 0, 20, 0.05);
+            border: 1px solid rgba(65, 0, 20, 0.12);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .project-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-style: italic;
+        }
+
+        .cta-arrow {
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-card:hover .cta-arrow,
+        .project-featured:hover .cta-arrow {
+            transform: translateX(4px);
+        }
+
+        .project-card:hover .project-cta,
+        .project-featured:hover .project-cta {
+            text-decoration: underline;
+        }
+
+        #galleryView h1 {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 36px;
+        }
+
+        /* Subtle, staggered entrance — cards settle in rather than simply
+           appearing, without calling attention to itself. Applied by JS
+           each time the gallery becomes visible (see revealGallery()).
+           Respects reduced-motion below. */
+        .project-featured,
+        .project-card {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        .project-featured.is-visible,
+        .project-card.is-visible {
+            animation: project-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes project-reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .project-featured,
+            .project-card {
+                opacity: 1;
+                transform: none;
+                animation: none;
+            }
+            .project-thumb,
+            .cta-arrow,
+            .project-card,
+            .project-featured {
+                transition: none;
+            }
+        }
+
+        /* ============================================================
+        THIS SITE, TOO.
+        A deliberate break from the project-card system.
+        The website doesn't need a case study because the viewer
+        is already experiencing the project.
+        ============================================================ */
+
+        .site-project {
+            width: 100%;
+            max-width: 1000px;
+            margin: 50px auto var(--project-gap);
+
+            padding: 34px 4px 36px;
+
+            border-top: 1px solid rgba(65, 0, 20, 0.14);
+            border-bottom: 1px solid rgba(65, 0, 20, 0.14);
+
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+
+            color: inherit;
+        }
+
+
+        /* ---------- heading ---------- */
+
+        .site-project-heading {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            min-height: 100%;
+        }
+
+        .site-project-kicker {
+            font-family: "futura-pt", sans-serif;
+            font-size: 1.45rem;
+            font-weight: 600;
+            font-style: italic;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .site-project-year {
+            margin-top: 24px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.45;
+        }
+
+
+        /* ---------- description ---------- */
+
+        .site-project-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 28px;
+        }
+
+        .site-project-note {
+            max-width: 560px;
+
+            margin: 0;
+
+            font-size: 1.05rem;
+            line-height: 1.65;
+            letter-spacing: -0.01em;
+        }
+
+
+        /* ---------- metadata ---------- */
+
+        .site-project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.5;
+        }
+
+
+        /* ============================================================
+        TABLET
+        ============================================================ */
+
+        @media (max-width: 768px) {
+
+            .site-project {
+                grid-template-columns: 1fr;
+                gap: 22px;
+
+                padding: 28px 0 30px;
+
+                margin-bottom: var(--project-gap);
+            }
+
+            .site-project-heading {
+                display: flex;
+                flex-direction: row;
+                align-items: baseline;
+                justify-content: space-between;
+            }
+
+            .site-project-kicker {
+                font-size: 1.2rem;
+            }
+
+            .site-project-year {
+                margin-top: 0;
+            }
+
+            .site-project-body {
+                gap: 22px;
+            }
+
+            .site-project-note {
+                font-size: 0.98rem;
+                line-height: 1.6;
+            }
+        }
+
+
+        /* ============================================================
+        REDUCED MOTION
+        ============================================================ */
+
+        @media (prefers-reduced-motion: reduce) {
+            .site-project {
+                transition: none;
+            }
+        }
+
+        /* Case-study detail view. One of these (or the shared "coming soon"
+           stub) is shown at a time; everything else — including the whole
+           gallery — is display:none. See showProjectDetail() / showGallery()
+           in the script below. */
+        .detail-view {
+            display: none;
+        }
+
+        .detail-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            padding: 0;
+            margin-bottom: 34px;
+        }
+
+        .detail-back:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* ---- Spacing scale used throughout the case-study detail view ----
+           --gap-tight (8px):  two elements that read as one unit (a title
+                                and the subtitle directly under it, a fact's
+                                label and its value).
+           --gap-base  (20px): the default rhythm between any two stacked
+                                elements inside a section (paragraph to
+                                paragraph, paragraph to image, etc.) — see
+                                the ".detail-section > * + *" rule below.
+           --gap-major (40px): separation between major blocks — the hero,
+                                the facts strip, the downloads row, and each
+                                top-level section (h2) from the next.
+           Every rule below reduces to one of these three numbers rather
+           than a one-off value, so spacing reads as intentional instead of
+           inconsistent. */
+        .detail-view {
+            --gap-tight: 8px;
+            --gap-base: 20px;
+            --gap-major: 40px;
+        }
+
+        .detail-hero {
+            width: 100%;
+            max-width: 800px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .detail-hero-byline {
+            width: 100%;
+            max-width: 800px;
+
+            margin: 18px auto var(--gap-major);
+
+            text-align: center;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.06em;
+            font-style: italic;
+            opacity: 0.55;
+        }
+
+        .detail-hero video {
+            width: 100%;
+            height: auto;
+
+            max-height: 500px;
+
+            object-fit: contain;
+            display: block;
+        }
+
+        .detail-hero img {
+            display: block;
+
+            width: auto;
+            height: auto;
+
+            max-width: 60%;
+            max-height: 300px;
+
+            object-fit: contain;
+        }
+
+        .detail-title {
+            font-size: 2.8rem !important;
+            text-align: center;
+            text-transform: uppercase;
+            width: 100%;
+            font-family: "futura-pt-bold", sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 0.95;
+        }
+
+        /* Simple meta line, for projects that don't need the fuller
+           .detail-facts spec block below. Pairs tightly with .detail-tags
+           right after it, then a major gap before the body. */
+        .detail-meta {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto var(--gap-tight);
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto var(--gap-major);
+        }
+
+        .detail-body {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-major);
+        }
+
+        /* Punchy one-line hook under the title (e.g. a tagline or thesis
+           sentence) — optional, only used when a project has one. Sits
+           tight against the title, then a major gap before whatever
+           metadata block comes next. */
+        .detail-subtitle {
+            width: 100%;
+            text-align: center;
+            max-width: 1000px;
+            margin: 8px auto 40px !important;
+            font-size: 1.05rem;
+            opacity: 0.75;
+            line-height: 1.2;
+        }
+
+        /* Structured facts (role / timeframe / type / tools / hardware) for
+           projects formal enough to want a proper spec block rather than a
+           single meta line. Sits where .detail-meta would otherwise go. */
+        .detail-facts {
+            width: 100%;
+            max-width: 1000px;
+            margin: var(--gap-major) auto var(--gap-major);
+
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+            gap: 0;
+
+            padding: 24px 0;
+            border-top: 1px solid rgba(65, 0, 20, 0.15);
+            border-bottom: 1px solid rgba(65, 0, 20, 0.15);
+        }
+
+        .detail-facts > div {
+            padding: 0 20px;
+        }
+
+        .detail-facts > div:first-child {
+            padding-left: 0;
+        }
+
+        .detail-facts > div:last-child {
+            padding-right: 0;
+        }
+
+        .fact-label {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: var(--gap-tight);
+        }
+
+        .fact-value {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .fact-value a {
+            color: inherit;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .fact-value a:hover {
+            opacity: 0.6;
+        }
+
+        /* Downloadable builds — plain bordered buttons, consistent with the
+           tag/pill language used elsewhere. Point the href at the real file
+           once builds are hosted somewhere. Same major gap before the body
+           as every other top-level block, so "Project Statement" doesn't
+           end up sitting closer to this than sections sit to each other. */
+        .detail-downloads {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto var(--gap-major);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid currentColor;
+            padding: 10px 18px;
+            color: inherit;
+            text-decoration: none;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.8;
+            transition: opacity 0.2s ease, background 0.2s ease;
+        }
+
+        .download-btn:hover {
+            opacity: 1;
+            background: rgba(65, 0, 20, 0.05);
+        }
+
+        /* Every section's children (h2/h3, paragraphs, lists, quotes,
+           images, the highlight box) space themselves by this one rule —
+           the base rhythm — so nothing inside a section needs its own
+           one-off margin. Headings below override just their own top
+           margin to read as a clear break; everything else stays uniform. */
+        .detail-section > * + * {
+            margin-top: var(--gap-base);
+        }
+
+        .detail-section > *:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section h2 {
+            font-size: 1.8rem;
+            font-family: "futura-pt", sans-serif;
+            font-weight: 400;
+            line-height: 1.3;
+        }
+
+        .detail-section p {
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+
+            font-size: 1.06rem;
+            line-height: 1.75;
+            text-align: justify;
+            opacity: 0.9;
+        }
+
+        /* Sub-heading one level below .detail-section h2, for projects whose
+           sections (e.g. "The Problem") contain several named sub-steps.
+           Deliberately smaller and lighter than h2 so the hierarchy reads
+           at a glance, and pulled further from the content above it than
+           the base rhythm — like starting a fresh beat — while staying
+           close to its own paragraph below. */
+        .detail-section h3 {
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            line-height: 1.2;
+            opacity: 0.9;
+            text-transform: uppercase;
+
+            margin-top: var(--gap-major) !important;
+        }
+
+        /* Editorial pull-quote treatment — used for artist/project
+           statements or other passages meant to read as a stand-alone
+           thesis rather than body copy. Slightly more room between stacked
+           quote paragraphs than plain body text, since the indent and
+           italic already read as one visual block. */
+        .detail-quote {
+            font-size: 1.06rem;
+            line-height: 1.85;
+            padding-left: 22px;
+            border-left: 3px solid currentColor;
+            opacity: 0.9;
+        }
+
+        .detail-quote + .detail-quote {
+            margin-top: 28px !important;
+        }
+
+        /* Highlight box for a single pivotal beat in the narrative — a
+           turning point worth visually separating from surrounding body
+           copy rather than just another paragraph. */
+        .detail-highlight {
+            border: 1px solid currentColor;
+            border-left: 4px solid currentColor;
+            padding: 22px 26px;
+        }
+
+        .detail-highlight > * + * {
+            margin-top: 12px;
+        }
+
+        .detail-highlight p {
+            font-size: 1.06rem;
+            line-height: 1.75;
+            opacity: 0.95;
+        }
+
+        .detail-highlight-label {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* Bulleted process notes — an em-dash bullet keeps the editorial
+           voice of the rest of the type instead of a default round bullet. */
+        ul.detail-list {
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        ul.detail-list li {
+            font-size: 1.06rem;
+            line-height: 1.7;
+            opacity: 0.9;
+            padding-left: 22px;
+            position: relative;
+        }
+
+        ul.detail-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
+        /* Tools/process pipeline shown as a wrapping chain of steps — for
+           projects with a linear technical pipeline worth visualizing
+           rather than describing in prose. */
+        .detail-flow {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .flow-step {
+            border: 1px solid currentColor;
+            padding: 16px 28px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .flow-arrow {
+            opacity: 0.5;
+            font-size: 1.3rem;
+            padding: 0 4px;
+        }
+
+        /* Placeholders for in-body images and video links — replace the
+           <div> with an <img>, or the <div> contents with a real <a href>
+           / <video> once you have media to link. Generous inner padding
+           and line-height so the placeholder label never crowds the
+           border; outer spacing comes from the base rhythm above, same as
+           every other element in the section. */
+        .detail-image-placeholder,
+        .detail-video-placeholder {
+            width: 100%;
+            height: 260px;
+            border: 1px dashed currentColor;
+            opacity: 0.55;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px;
+            line-height: 1.6;
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .detail-video-placeholder a {
+            color: inherit;
+        }
+
+        .detail-video {
+            width: 100%;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+            margin: 30px auto 27px;
+        }
+
+        .detail-video video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 9px;
+        }
+
+        .detail-image-pair {
+            width: 100%;
+            max-width: 1000px;
+            margin: 30px auto 20px;
+
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .detail-image-frame {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .detail-image-frame img {
+            height: 320px;
+            width: auto;
+            display: block;
+            border-radius: 9px;
+        }
+
+        .detail-image-pair--installation .detail-image-frame img {
+            height: 460px;
+        }
+
+
+        .detail-image-trio {
+            width: 100%;
+            max-width: 900px;
+            margin: 30px auto 0;
+
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .detail-image-trio .detail-image-frame {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .detail-image-trio .detail-image-frame img {
+            height: 300px;
+            width: auto;
+            display: block;
+        }
+
+        .final-documentation {
+            width: 100%;
+            max-width: 1000px;
+            margin: 50px auto 0;
+        }
+
+        .final-scene {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .final-scene-image {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .final-scene-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .final-scene-video {
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        .final-scene-video video {
+            width: 100%;
+            height: 455px;
+            display: block;
+            opacity: 0.90;
+             filter: brightness(0.55) contrast(1.3);
+        }
+
+        .final-scene-video video.lulu-video {
+            filter: brightness(0.75) saturate(0.9);
+        }
+
+        .coming-soon {
+            font-style: italic;
+            opacity: 0.85;
+        }
+
+        /* ================= FIXED MEDIA STAGE ================= */
+
+        .detail-media-gallery {
+            width: 100%;
+            max-width: 1000px;
+            margin: 30px auto 40px;
+        }
+
+        .detail-media-viewport {
+            width: 100%;
+            max-width: 900px;
+            height: min(450px, 40vw);
+
+            margin: 0 auto;
+            overflow: hidden;
+            
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+        }
+
+
+        .detail-media-slide {
+            display: none;
+
+            width: 100%;
+            height: 100%;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .detail-media-slide.active {
+            display: flex;
+        }
+
+
+        .detail-media-slide img,
+        .detail-media-slide video {
+            display: block;
+
+            width: auto;
+            height: auto;
+
+            max-width: 100%;
+            max-height: 100%;
+
+            border-radius: 9px;
+
+            object-fit: contain;
+        }
+
+
+        /* ================= PORTRAIT ================= */
+
+        /*
+        Portrait media stays fully visible and centred,
+        but the 16:9 stage NEVER changes size.
+        */
+
+        .detail-media-slide.portrait img,
+        .detail-media-slide.portrait video {
+            display: block;
+
+            height: 100%;
+            width: auto;
+
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 9px;
+        }
+
+
+        /* ================= CONTROLS ================= */
+
+        .detail-media-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            width: 100%;
+            max-width: 900px;
+
+            margin: 12px auto 0;
+        }
+
+        .detail-media-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 42px;
+            height: 42px;
+
+            padding: 0;
+
+            background: none;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+
+            color: inherit;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 1rem;
+
+            cursor: pointer;
+            opacity: 0.65;
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .detail-media-arrow:hover {
+            opacity: 1;
+            background: rgba(65, 0, 20, 0.05);
+        }
+
+        .detail-media-arrow:first-child:hover {
+            transform: translateX(-2px);
+        }
+
+        .detail-media-arrow:last-child:hover {
+            transform: translateX(2px);
+        }
+
+        .detail-media-arrow:disabled {
+            opacity: 0.15;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .detail-media-counter {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.55;
+        }
+
+        .detail-media-caption {
+            width: 100%;
+            max-width: 900px;
+            margin: 12px auto 0;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+
+            opacity: 0.5;
+            text-align: center;
+        }
+
+        /* =========================================================
+        CASE STUDY COMING SOON
+        ========================================================= */
+
+        .detail-case-study-note {
+            width: calc(100% - 120px);
+            max-width: 760px;
+
+            margin: 80px auto 20px;
+
+            padding-top: 28px;
+
+            border-top: 1px solid rgba(65, 0, 20, 0.15);
+
+            text-align: center;
+        }
+
+        .detail-case-study-note .note-label {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.55;
+
+            margin-bottom: 10px;
+        }
+
+        .detail-case-study-note p {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            opacity: 0.75;
+        }
+
+        .detail-case-study-note .note-label,
+        .detail-case-study-note p {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .detail-pdf {
+            width: 100%;
+            max-width: 900px;
+            height: 80vh;
+            margin: 40px auto 0;
+
+            overflow: hidden;
+            border-radius: var(--thumb-radius);
+        }
+
+        .detail-pdf iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: none;
+        }
+
+
+         /* ================= WRITING — minimal essay gallery ================= */
+ 
+        /* Deliberately quieter cousin of the projects gallery: same card
+           anatomy (thumbnail, meta, title, description, CTA) but a single
+           consistent grid with no featured/case-study split, since each
+           essay links out to the full piece rather than opening an in-page
+           case study. Tokens are scoped to this section's own accent
+           (E6BDDF on #3D5071) rather than reusing the cream section's
+           maroon-based rgba values, so the surface still reads as native
+           to this panel's palette. Staggered-reveal keyframe and timing
+           are shared with the projects gallery via .writing-card being
+           included in that rule set above — same system, one accent swap. */
+        #writingGallery {
+            --writing-gap: 24px;
+            --writing-border: rgba(230, 189, 223, 0.22);
+            --writing-radius: 16px;
+            --writing-thumb-radius: 10px;
+        }
+ 
+        #writingGallery h1 {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 36px;
+        }
+ 
+
+        /* ================= WRITING — ESSAY READER ================= */
+
+        /* The PDF reader is hidden until an essay is selected. */
+
+        .essay-reader {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+
+        /* Back button */
+
+        .essay-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            background: none;
+            border: none;
+            padding: 0;
+
+            color: inherit;
+
+            cursor: pointer;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+
+            opacity: 0.7;
+
+            margin-bottom: 40px;
+
+            transition: opacity 0.2s ease;
+        }
+
+        .essay-back:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+
+        /* Essay title area */
+
+        .essay-header {
+            width: 100%;
+            text-align: center;
+
+            margin-bottom: 40px;
+        }
+
+        .essay-meta {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.55;
+
+            margin-bottom: 10px;
+        }
+
+        .essay-header h1 {
+            font-family: "futura-pt", sans-serif;
+            font-weight: 400;
+
+            font-size: 2.8rem;
+            line-height: 1.1;
+
+            margin: 0;
+        }
+
+
+        /* PDF frame */
+
+        .essay-frame {
+            width: 100%;
+            max-width: 900px;
+
+            height: 80vh;
+
+            margin: 0 auto;
+
+            border: 1px solid var(--writing-border);
+            border-radius: var(--writing-radius);
+
+            overflow: hidden;
+
+            background: rgba(255, 255, 255, 0.03);
+
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .essay-frame iframe {
+            display: block;
+
+            width: 100%;
+            height: 100%;
+
+            border: none;
+        }
+
+
+        /* ================= WRITING CARDS ================= */
+
+        .writing-grid {
+            display: flex;
+            flex-direction: column;
+
+            gap: var(--writing-gap);
+
+            width: 100%;
+            max-width: 1000px;
+
+            margin: 0 auto;
+        }
+
+
+        .writing-card {
+            display: flex;
+            align-items: stretch;
+
+            gap: 28px;
+
+            width: 100%;
+            min-height: 190px;
+
+            border: 1px solid var(--writing-border);
+            border-radius: var(--writing-radius);
+
+            padding: 18px;
+
+            color: inherit;
+            text-decoration: none;
+
+            background: rgba(255, 255, 255, 0.03);
+
+            cursor: pointer;
+
+            transition:
+                background 0.4s ease,
+                border-color 0.4s ease,
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+
+        .writing-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+
+            border-color: rgba(230, 189, 223, 0.45);
+
+            transform: translateY(-3px);
+        }
+
+
+        /* Thumbnail */
+
+        .writing-thumb {
+            position: relative;
+            flex: 0 0 30%;
+            width: 30%;
+            height: 190px;
+
+            border-radius: var(--writing-thumb-radius);
+            overflow: hidden;
+
+            padding: 0;
+            margin: 0;
+
+            background: none;
+        }
+
+        .writing-thumb img {
+            display: block;
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+            object-position: center;
+
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+
+        /* Information */
+
+        .writing-info {
+            flex: 1;
+            min-width: 0;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .writing-meta {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.55;
+
+            margin-bottom: 8px;
+        }
+
+
+        .writing-title {
+            font-family: "futura-pt", sans-serif;
+            font-weight: 600;
+
+            font-size: 1.15rem;
+            letter-spacing: 0.01em;
+
+            margin-bottom: 10px;
+        }
+
+
+        .writing-desc {
+            font-size: 0.85rem;
+            line-height: 1.65;
+
+            opacity: 0.85;
+
+            margin-bottom: 14px;
+        }
+
+
+        .writing-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            margin-top: auto;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.72rem;
+
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+
+            font-style: italic;
+        }
+
+
+        .writing-card:hover .writing-cta {
+            text-decoration: underline;
+        }
+
+
+        .writing-card:hover .writing-cta .cta-arrow {
+            transform: translateX(4px);
+        }
+
+
+        /* ============================================================
+       ABOUT ME — reworked
+       Two states, driven by a single `activeKey`:
+ 
+         - resting: illustration on the left, header list on the right.
+         - active:  illustration crossfades out, the matching detail
+           copy crossfades in in its place. The header list stays put
+           on desktop (same active/inactive styling you already had —
+           dot collapses, label goes small-caps-italic). On mobile the
+           header row moves to the bottom, and the active header
+           physically relocates to sit as a title above the copy —
+           tapping that title again sends it back to the row and
+           restores the illustration.
+ 
+       Only one header can be active at a time; selecting a new one
+       swaps the others back off automatically.
+       ============================================================ */
+
+        .about-stage {
+           flex: 1;
+            display: flex;
+            align-items: stretch;
+
+            gap: 40px;
+
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+
+            min-height: 0;
+        }
+
+
+        /* ---------- left / visual half ---------- */
+
+        .about-visual {
+            position: relative;
+            flex: 1 1 55%;
+            min-width: 0;
+            min-height: 520px;
+            border-radius: 2px;
+            overflow: visible;
+        }
+
+
+        /* Illustration and detail occupy exactly the same visual space */
+
+        .about-illustration,
+        .about-detail-wrap {
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* ============================================================
+        ABOUT ILLUSTRATION
+        Always centred within its available visual space.
+        Size scales fluidly with the viewport.
+        ============================================================ */
+
+        .about-illustration {
+            position: absolute;
+            inset: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            opacity: 1;
+            transform: scale(1);
+
+            color: rgba(236, 232, 223, 0.8);
+
+            transition:
+                opacity 0.5s ease,
+                transform 0.5s ease;
+        }
+
+        .about-illustration img {
+            /*
+            Fluid sizing — no fixed pixel dimensions and no
+            breakpoint-specific resizing.
+            */
+            width: min(55vw, 720px);
+            height: auto;
+
+            /*
+            Don't let the old container width constrain the artwork.
+            */
+            max-width: 100%;
+            height: auto;
+
+            object-fit: contain;
+
+            /*
+            Centre the actual artwork within the available space.
+            */
+            object-position: center center;
+
+            flex-shrink: 1;
+        }
+
+        .about-stage.is-active .about-illustration {
+            opacity: 0;
+            transform: scale(0.96);
+            pointer-events: none;
+        }
+       
+        /* ---------- revealed information ---------- */
+
+        .about-detail-wrap {
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+
+            /*
+            Centre the information in the same visual territory
+            previously occupied by the illustration.
+            */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-direction: column;
+
+            overflow-y: auto;
+            padding: 20px 12px;
+        }
+
+        .about-detail-wrap::-webkit-scrollbar {
+            display: none;
+        }
+
+        .about-detail-wrap {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .about-stage.is-active .about-detail-wrap {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            padding-top: 24px; 
+            padding-bottom: 24px;
+        }
+
+
+        /* Title slot only gets populated on mobile */
+
+        .about-title-slot:empty {
+            display: none;
+        }
+
+
+        /* ---------- detail content ---------- */
+
+        /* ============================================================
+        ABOUT DETAIL — editorial layouts
+        Each section has its own visual rhythm rather than behaving
+        like one large block of body copy.
+        ============================================================ */
+
+        .about-detail {
+            display: none;
+            width: 100%;
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        .about-detail.open {
+            display: block;
+        }
+
+
+        /* ---------- shared typography ---------- */
+
+        .detail-eyebrow {
+            display: block;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+
+            opacity: 0.45;
+        }
+
+        .about-detail .detail-lede {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            font-weight: 500;
+            letter-spacing: -0.015em;
+
+            margin: 0 0 20px;
+        }
+
+        .about-detail p.detail-text {
+            font-size: 1rem;
+            line-height: 1.75;
+            font-weight: 400;
+
+            opacity: 0.78;
+
+            margin: 0 0 18px;
+        }
+
+        .about-detail p.detail-text:last-child {
+            margin-bottom: 0;
+        }
+
+
+        /* ============================================================
+        ABOUT ME
+        ============================================================ */
+
+        .about-detail--intro {
+            display: none;
+        }
+
+        .about-detail--intro.open {
+            display: grid;
+
+            grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.28fr);
+            gap: 46px;
+
+            align-items: center;
+        }
+
+
+        /* image */
+
+        .about-detail-media {
+            align-self: stretch;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .about-detail-media img {
+            display: block;
+
+            width: 100%;
+            height: auto;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            opacity: 0.94;
+        }
+
+        .about-media-caption {
+            display: block;
+
+            margin-top: 16px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+
+            opacity: 0.8;
+        }
+
+
+        /* text */
+
+        .about-detail-content {
+            min-width: 0;
+        }
+
+        .about-detail-content .detail-lede {
+            font-size: 1.35rem;
+            line-height: 1.45;
+
+            margin-bottom: 22px;
+        }
+
+        .detail-text--personal {
+            padding-top: 8px;
+        }
+
+
+        /* ============================================================
+        SKILLS
+        ============================================================ */
+
+        .about-detail--skills.open {
+            display: block;
+        }
+
+        .skills-intro {
+            display: grid;
+
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: 40px;
+
+            margin-bottom: 32px;
+
+            padding-bottom: 24px;
+
+            border-bottom: 1px solid rgba(236, 232, 223, 0.12);
+        }
+
+        .skills-intro .detail-lede {
+            margin: 0;
+            max-width: 580px;
+        }
+
+        .skills-list {
+            display: grid;
+
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            column-gap: 42px;
+            row-gap: 26px;
+        }
+
+        .skill-group {
+            display: grid;
+
+            grid-template-columns: 30px minmax(0, 1fr);
+
+            gap: 12px;
+
+            margin: 0;
+        }
+
+        .skill-number {
+            padding-top: 2px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.06em;
+
+            opacity: 0.5;
+        }
+
+        .skill-group .skill-cat {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.72rem;
+            font-weight: 500;
+
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.55;
+
+            margin: 0 0 7px;
+        }
+
+        .skill-group .skill-items {
+            font-size: 1rem;
+            line-height: 1.65;
+
+            opacity: 0.78;
+
+            margin: 0;
+        }
+
+        /* ============================================================
+        EDUCATION
+        ============================================================ */
+
+        .about-detail--education.open {
+            display: grid;
+
+            grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+
+            gap: 48px;
+
+            align-items: center;
+        }
+
+
+        /* ---------- graduation photo ---------- */
+
+        .education-photo {
+            display: flex;
+            flex-direction: column;
+
+            align-self: stretch;
+            justify-content: center;
+        }
+
+        .education-photo img {
+            display: block;
+
+            width: 100%;
+            height:auto;
+
+            object-fit: contain;
+
+            border-radius:8px;
+
+            opacity: 1;
+        }
+
+
+        /* ---------- content ---------- */
+
+        .education-content {
+            min-width: 0;
+        }
+
+        .education-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+
+            padding-bottom: 18px;
+
+            border-bottom: 1px solid rgba(236, 232, 223, 0.12);
+
+            margin-bottom: 30px;
+        }
+
+        .education-year {
+            font-family: "futura-pt", sans-serif;
+
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
+            font-weight: 500;
+
+            letter-spacing: -0.04em;
+            line-height: 0.8;
+
+            opacity: 0.16;
+        }
+
+        .edu-school {
+            font-family: "futura-pt", sans-serif;
+
+            font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+            font-weight: 600;
+
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+
+            margin: 0 0 12px;
+        }
+
+        .edu-degree {
+            font-size: 1rem;
+
+            opacity: 0.6;
+
+            margin: 0 0 20px;
+        }
+
+        .education-honors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            margin-bottom: 28px;
+        }
+
+        .education-honors span {
+            padding: 5px 10px;
+
+            border: 1px solid rgba(236, 232, 223, 0.15);
+            border-radius: 20px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+
+            opacity: 0.6;
+        }
+
+        .education-description {
+            max-width: 520px;
+        }
+
+
+        /* ============================================================
+        EDUCATION — MOBILE
+        ============================================================ */
+
+        @media (max-width: 768px) {
+
+            .about-detail--education.open {
+                display: flex;
+                flex-direction: column;
+
+                gap: 26px;
+
+                align-items: stretch;
+            }
+
+            .education-photo img {
+                aspect-ratio: 16 / 9;
+            }
+
+            .education-header {
+                margin-bottom: 24px;
+            }
+
+            .education-year {
+                font-size: 2.3rem;
+            }
+
+            .edu-school {
+                font-size: 1.5rem;
+            }
+
+            .education-honors {
+                margin-bottom: 24px;
+            }
+        }
+
+
+        /* ============================================================
+        DESIGN PHILOSOPHY
+        ============================================================ */
+
+        .about-detail--philosophy.open {
+            display: grid;
+
+            grid-template-columns: 1.05fr 0.95fr;
+
+            gap: 60px;
+
+            align-items: start;
+        }
+
+        .philosophy-statement {
+            position: relative;
+        }
+
+        .philosophy-lede {
+            max-width: 580px;
+
+            margin: 22px 0 0;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            font-weight: 500;
+
+            line-height: 0.98;
+            letter-spacing: -0.035em;
+        }
+
+        .philosophy-mark {
+            margin-top: 28px;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 2rem;
+
+            opacity: 0.3;
+        }
+
+        .philosophy-copy {
+            padding-top: 28px;
+        }
+
+        .philosophy-copy .detail-text {
+            margin-bottom: 24px;
+        }
+
+        .philosophy-copy em {
+            opacity: 1;
+        }
+
+
+        /* ============================================================
+        DETAIL WRAP — slightly more room for the editorial layouts
+        ============================================================ */
+
+        .about-stage.is-active .about-detail-wrap {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+
+        /* ============================================================
+        TABLET
+        ============================================================ */
+
+        @media (max-width: 1100px) {
+
+            .about-detail {
+                max-width: 800px;
+            }
+
+            .about-detail--intro.open {
+                grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.3fr);
+                gap: 34px;
+            }
+
+            .skills-list {
+                column-gap: 30px;
+            }
+
+            .about-detail--philosophy.open {
+                gap: 40px;
+            }
+
+            .about-media-caption { 
+                text-align: center;
+                width: 100%; }
+        }
+
+
+        /* ============================================================
+        MOBILE
+        ============================================================ */
+
+        @media (max-width: 1000px) {
+
+            .about-detail {
+                max-width: none;
+            }
+
+
+            /* ---------- shared ---------- */
+
+            .about-detail .detail-lede {
+                font-size: 1.15rem;
+            }
+
+            .about-detail p.detail-text {
+                font-size: 0.94rem;
+                line-height: 1.7;
+            }
+
+
+            /* ---------- about me ---------- */
+
+            .about-detail--intro.open {
+                display: flex;
+                flex-direction: column;
+
+                gap: 24px;
+
+                align-items: stretch;
+            }
+
+            .about-detail-media img {
+                aspect-ratio: 16 / 9;
+            }
+
+            .about-detail-content .detail-lede {
+                font-size: 1.2rem;
+            }
+
+
+            /* ---------- skills ---------- */
+
+            .skills-intro {
+                display: block;
+
+                margin-bottom: 28px;
+                padding-bottom: 20px;
+            }
+
+            .skills-intro .detail-eyebrow {
+                margin-bottom: 12px;
+            }
+
+            .skills-list {
+                grid-template-columns: 1fr;
+
+                row-gap: 22px;
+            }
+
+            .skill-group {
+                grid-template-columns: 28px minmax(0, 1fr);
+            }
+
+
+            /* ---------- philosophy ---------- */
+
+            .about-detail--philosophy.open {
+                display: flex;
+                flex-direction: column;
+
+                gap: 20px;
+            }
+
+            .philosophy-lede {
+                font-size: clamp(1rem, 9vw, 2rem);
+            }
+
+            .philosophy-copy {
+                padding-top: 0;
+            }
+
+            .philosophy-mark {
+                margin-top: 20px;
+            }
+        }
+
+        .about-detail p.detail-text:last-child {
+            margin-bottom: 0;
+        }
+
+        .skill-group:last-child {
+            margin-bottom: 0;
+        }
+
+
+        /* ---------- right / header list ---------- */
+
+        .about-menu {
+            flex: 0 0 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            /*
+            More breathing room between headers.
+            */
+            gap: 44px;
+        }
+
+        .about-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            width: 280px;
+            height: 52px;
+
+            background: none;
+            border: none;
+            padding: 0;
+
+            color: inherit;
+            font: inherit;
+            text-align: left;
+
+            transform: translateX(0); 
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .about-header:focus-visible {
+            outline: 1px solid currentColor;
+            outline-offset: 6px;
+        }
+
+        .about-header .dot {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.35;
+            flex-shrink: 0;
+            margin-right: -32px;
+
+            transform: scale(1); 
+            transform-origin: center; 
+            transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            height 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            margin-right 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            opacity 0.35s ease, 
+            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .about-header .label-text {
+            font-size: 2rem;
+            transform: translateY(-3px);
+            line-height: 1;
+            white-space: nowrap;
+
+            transition: font-size 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), 
+            opacity 0.3s ease;
+        }
+
+        .about-header:hover .dot {
+            opacity: 0.6;
+        }
+
+        .about-header.active .dot {
+            width: 10px;
+            height: 10px;
+            margin-right: 0;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .about-header.active .label-text {
+            font-family: "futura-pt", "futura-pt-bold", sans-serif;
+            font-weight: 500;
+            font-size: 1.25rem;
+            line-height: 1;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            transform: translateY(0);
+        }
+
+
+        /* ---------- footer ---------- */
+
+        .about-footer {
+            margin-top: 50px;
+            width: 100%;
+            text-align: center;
+
+            color: inherit; 
+            text-decoration: none; 
+            text-decoration-color: currentColor; 
+            text-underline-offset: 4px; 
+            text-decoration-thickness: 1px; 
+            transition: opacity 0.25s ease, text-decoration-color 0.25s ease;
+        }
+
+        .about-footer a:hover { 
+            text-decoration: underline; 
+        } 
+        
+        .about-footer a:focus-visible { 
+            outline: 1px solid currentColor; 
+            outline-offset: 3px; 
+        }
+
+        .about-footer p {
+            font-size: clamp(0.7rem, 1vw + 0.4rem, 0.95rem);
+            margin-bottom: 0;
+        }
+
+        .about-footer p a,
+        .about-footer p a:visited {
+            color: inherit;
+            opacity: 0.6;
+            transition:
+                color 0.25s ease,
+                opacity 0.25s ease,
+                font-weight 0.25s ease;
+        }
+
+        .about-footer p a:hover,
+        .about-footer p a:active {
+            color: #F8EEE5 !important;
+            opacity: 1;
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-color: currentColor;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+        }
+
+        .about-footer p a:focus-visible {
+            color: #F8EEE5 !important;
+            opacity: 1;
+            outline: 1px solid currentColor;
+            outline-offset: 4px;
+        }
+
+
+        /* ---------- reduced motion ---------- */
+
+        @media (prefers-reduced-motion: reduce) {
+            .about-illustration,
+            .about-detail-wrap,
+            .about-header .dot,
+            .about-header .label-text {
+                transition: none !important;
+            }
+        }
+
+        /* ============================================================
+        ABOUT — INTERMEDIATE / TABLET
+        Switch to vertical layout earlier so the illustration and
+        navigation never compete for horizontal space.
+        ============================================================ */
+
+        @media (max-width: 1100px) {
+
+            .about-stage {
+                flex: 0 0 auto;
+                flex-direction: column;
+                gap: 0;
+                max-width: 900px;
+            }
+
+            /* --------------------------------
+            Visual / information area
+            -------------------------------- */
+
+            .about-visual {
+                width: 100%;
+                min-height: 500px;
+                overflow: visible;
+            }
+
+            .about-illustration img { 
+                width: min(70vw, 700px);
+                max-height: 100%; 
+            }
+
+
+            /* --------------------------------
+            Revealed information
+            -------------------------------- */
+
+            .about-detail-wrap {
+                /*
+                Give the copy the full width of the new vertical
+                composition.
+                */
+                padding: 40px 0;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .about-detail {
+                width: 100%;
+                max-width: 760px;
+            }
+
+
+            /* --------------------------------
+            Header navigation
+            -------------------------------- */
+
+            .about-menu {
+                flex: 0 0 auto;
+                width: 100%;
+
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                transform: translateX(0px);
+
+                gap: 18px 42px;
+
+                padding: 28px 0 10px;
+
+                border-top: 1px solid rgba(236, 232, 223, 0.12);
+            }
+
+            .about-header {
+                height: 52px;
+                width: auto;
+            }
+
+            .about-footer { 
+               margin-top: 50px; 
+            }
+        }
+
+
+        /* ============================================================
+        MOBILE
+        ============================================================ */
+
+        @media (max-width: 768px) {
+
+            .about-stage {
+                max-width: none;
+            }
+
+            .about-visual {
+                width: 100%;
+                min-height: 420px;
+            }
+
+            .about-illustration img { 
+                width: 90vw; 
+                max-height: 100%; 
+            }
+
+
+            /* --------------------------------
+            Detail information
+            -------------------------------- */
+
+            .about-detail-wrap {
+                padding: 24px 0;
+                align-items: center;
+                justify-content: flex-start;
+            }
+
+            .about-detail {
+                width: 100%;
+                max-width: none;
+            }
+
+
+            /* --------------------------------
+            Header row
+            -------------------------------- */
+
+            .about-menu {
+                gap: 10px 22px;
+                padding: 22px 0 6px;
+                transform: translateX(0px);
+            }
+
+            .about-header {
+                height: auto;
+                gap: 10px;
+            }
+
+            .about-header .dot {
+                width: 26px;
+                height: 26px;
+                margin-right: -16px;
+            }
+
+            .about-header.active .dot {
+                width: 8px;
+                height: 8px;
+                margin-right: 0;
+            }
+
+            .about-header .label-text {
+                font-size: 1.05rem;
+                transform: none;
+            }
+
+
+            /* --------------------------------
+            Mobile selected header
+            -------------------------------- */
+
+            .about-title-slot {
+                width: 100%;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                padding: 0 0 18px;
+                margin: 0 0 18px;
+
+                border-bottom: 1px solid rgba(236, 232, 223, 0.12);
+            }
+
+            .about-title-slot .about-header {
+                height: auto;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .about-title-slot .about-header .dot {
+                width: 26px;
+                height: 26px;
+                margin-right: -16px;
+            }
+
+            .about-title-slot .about-header.active .dot {
+                width: 8px;
+                height: 8px;
+                margin-right: 0;
+                opacity: 1;
+            }
+
+            .about-title-slot .about-header.active .label-text {
+                font-family: inherit;
+                font-weight: inherit;
+                font-size: 1.05rem;
+                line-height: inherit;
+                font-style: normal;
+                text-transform: none;
+                letter-spacing: normal;
+                transform: none;
+            }
+        }
+
+        /* Scrollbar styling - HIDDEN */
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .content {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Different background colors for each section */
+        /* About Me - Sage Green */
+        .section:nth-child(1) {
+            background: #c3789b;
+            color: #F8EEE5;
+        }
+
+        .section:nth-child(1) .section-label {
+            color: #F8EEE5;
+            font-family: "futura-pt", sans-serif;
+            font-style: italic;
+        }
+
+        /* Projects - Cream */
+        .section:nth-child(2) {
+            background: #F8EEE5;
+            color: #4a1149;
+        }
+
+        .section:nth-child(2) .section-label {
+            color: #4a1149;
+            font-family: "futura-pt", sans-serif;
+            font-style: italic;
+        }
+
+        /* Writing - Navy Blue */
+        .section:nth-child(3) {
+            background: #3D5071;
+            color: #E6BDDF;
+        }
+
+        .section:nth-child(3) .section-label {
+            color: #E6BDDF;
+            font-family: "futura-pt", sans-serif;
+            font-style: italic;
+        }
+
+        /* Documents - Light Blue */
+        .section:nth-child(4) {
+            background: #b7d6ff;
+            color: #3d5071;
+        }
+
+        .section:nth-child(4) .section-label {
+            color: #3D5071;
+            font-family: "futura-pt", sans-serif;
+            font-style: italic;
+        }
+
+        /* ================= DOCUMENTS ================= */
+
+        #documentsGallery {
+            --documents-gap: 24px;
+            --documents-border: rgba(42, 97, 137, 0.3);
+            --documents-radius: 16px;
+        }
+
+        #documentsGallery h1 {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 36px;
+        }
+
+        .document-grid {
+            display: flex;
+            flex-direction: column;
+
+            gap: var(--documents-gap);
+
+            width: 100%;
+            max-width: 1000px;
+
+            margin: 0 auto;
+        }
+
+
+        .document-card {
+            width: 100%;
+            min-height: 190px;
+
+            display: flex;
+            flex-direction: column;
+
+            border: 1px solid var(--documents-border);
+            border-radius: var(--documents-radius);
+
+            padding: 18px;
+
+            color: inherit;
+
+            background: rgba(255, 255, 255, 0.03);
+
+            cursor: pointer;
+
+            transition:
+                background 0.4s ease,
+                border-color 0.4s ease,
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+
+        .document-card:hover {
+            background: rgba(255, 255, 255, 0.09);
+
+            transform: translateY(-3px);
+        }
+
+
+        /* Information */
+
+        .document-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .document-meta {
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            opacity: 0.55;
+
+            margin-bottom: 8px;
+        }
+
+
+        .document-title {
+            font-family: "futura-pt", sans-serif;
+            font-weight: 600;
+
+            font-size: 1.15rem;
+            letter-spacing: 0.01em;
+
+            margin: 0 0 10px;
+        }
+
+
+        .document-desc {
+            font-size: 0.85rem;
+            line-height: 1.65;
+
+            opacity: 0.85;
+
+            margin: 0 0 14px;
+        }
+
+
+        #documentsGallery .document-cta {
+            display: inline-flex;
+
+            margin-top: auto;
+            padding-top: 14px;
+
+            flex-shrink: 0;
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-style: italic;
+        }
+
+        #documentsGallery .document-cta::after {
+            content: "Open document";
+        }
+
+        #documentsGallery .document-card.is-open .document-cta::after {
+            content: "Close document";
+        }
+
+        #documentsGallery .document-card:hover .document-cta {
+            text-decoration: underline;
+        }
+
+
+        .document-card:hover .document-cta {
+            text-decoration: underline;
+        }
+
+
+        /* ================= DOCUMENT READER ================= */
+
+        .document-reader {
+            display: none;
+
+            width: 100%;
+
+            margin-top: 24px;
+
+            border-radius: 10px;
+            overflow: hidden;
+
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+
+        .document-card.is-open .document-reader {
+            display: block;
+        }
+
+
+        .document-reader iframe {
+            display: block;
+
+            width: 100%;
+            height: 80vh;
+
+            border: none;
+        }
+
+
+        /* Open state */
+
+        .document-card.is-open {
+            cursor: default;
+
+            background: rgba(255, 255, 255, 0.03);
+
+            transform: none;
+        }
+
+
+        .document-card.is-open:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+
+        .document-card.is-open .document-cta {
+            text-decoration: underline;
+            margin-top: 14px;
+        }
+
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 700px) {
+
+            .document-card {
+                padding: 20px;
+            }
+
+            .document-reader iframe {
+                height: 70vh;
+            }
+
+            .document-reader iframe {
+                display: block;
+                width: 100%;
+                height: 80vh;
+                border: none;
+            }
+
+        }
+
+          @media (max-width: 900px) {
+            .project-featured {
+                flex-direction: column;
+            }
+
+            .project-featured .project-thumb--featured {
+                width: 100%;
+                height: auto;
+
+                aspect-ratio: 16 / 9;
+
+                min-height: 0;
+            }
+
+            .project-featured .project-info {
+                padding: 8px 8px 4px;
+            }
+
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .section {
+                flex: 0 0 60px;
+                border-right: none;
+                border-bottom: 1px solid #666;
+            }
+
+            .section.expanded {
+                flex: 1;
+            }
+
+            .section-label {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            .content {
+                padding: 40px 30px;
+            }
+        }
+
+         @media (max-width: 700px) {
+            /* Projects: cards already stack thumbnail-over-info by default;
+               just shrink the media placeholders on narrow screens so they
+               don't force extra scrolling. */
+
+            .detail-hero {
+                width: 100%;
+                max-width: 800px;
+
+                height: auto;
+                min-height: 0;
+
+                margin: 0 auto;
+            }
+
+            .detail-hero video {
+                width: 100%;
+                height: auto;
+
+                max-height: none;
+
+                display: block;
+            }
+
+            .detail-body {
+                gap: 0;
+                padding-bottom: 0;
+            }
+
+            .detail-image-placeholder,
+            .detail-video-placeholder {
+                height: 180px;
+            }
+
+            .detail-facts {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-facts > div {
+                padding: 16px 0;
+            }
+
+            .detail-facts > div:first-child {
+                padding-top: 0;
+            }
+
+            .detail-facts > div:last-child {
+                padding-bottom: 0;
+            }
+
+             .detail-section p {
+                width: calc(100% - 32px);
+                text-align: left;
+            }
+
+            .detail-flow {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+
+            .flow-step {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .detail-image-pair {
+                width: calc(100% - 32px);
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .detail-image-frame {
+                width: 100%;
+            }
+
+            .detail-image-frame img {
+                width: auto;
+                height: auto;
+                max-width: 100%;
+            }
+
+            .final-scene {
+                flex-direction: column;
+                gap: 24px;
+                margin-bottom: 50px;
+            }
+
+            .final-scene-image {
+                width: 100%;
+            }
+
+            .final-scene-video {
+                width: min(280px, 100%);
+            }
+
+            .detail-media-gallery {
+                width: 100%;
+                max-width: none;
+
+                margin: 8px auto 28px;
+            }
+            
+            .detail-media-viewport {
+                width: 100%;
+                max-width: none;
+
+                aspect-ratio: 16 / 9;
+                height: auto;
+
+                margin: 0 auto;
+
+                overflow: hidden;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .detail-media-controls {
+                width: 100%;
+                max-width: none;
+
+                margin: 12px auto 0;
+
+                padding: 0 16px;
+                box-sizing: border-box;
+            }
+
+            .detail-media-slide img,
+            .detail-media-slide video {
+                display: block;
+
+                width: auto;
+                height: auto;
+
+                max-width: 100%;
+                max-height: 100%;
+
+                object-fit: contain;
+            }
+
+            .detail-media-slide.portrait img,
+            .detail-media-slide.portrait video {
+                width: auto;
+                height: auto;
+
+                max-width: 100%;
+                max-height: 100%;
+
+                object-fit: contain;
+            }
+
+            .detail-media-arrow {
+                width: 36px;
+                height: 36px;
+            }
+
+            .detail-case-study-note {
+                width: calc(100% - 32px);
+                margin: 28px auto 20px;
+            }
+
+           .detail-title {
+                width: 100%;
+                max-width: 100%;
+
+                padding: 0 0px;
+                margin: 0 auto;
+
+                box-sizing: border-box;
+
+                font-size: 2rem !important;
+                line-height: 1.1;
+                text-align: center;
+                overflow-wrap: break-word;
+            }
+
+            .detail-hero-byline {
+                width: 100%;
+                max-width: 800px;
+
+                margin: 20px auto 28px;
+
+                padding: 0 16px;
+
+                text-align: center;
+
+                font-size: 0.9rem;
+                line-height: 1.5;
+
+                box-sizing: border-box;
+            }
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 700px) {
+
+            .writing-card {
+                flex-direction: column;
+
+                gap: 18px;
+
+                min-height: 0;
+            }
+
+            .writing-thumb {
+                flex: none;
+
+                width: 100%;
+                height: 180px;
+                min-height: 0;
+            }
+
+            .essay-header h1 {
+                font-size: 2.2rem;
+            }
+
+            .essay-frame {
+                height: 75vh;
+            }
+
+            .essay-back {
+                margin-bottom: 30px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- About Me Section -->
+        <div class="section expanded" data-section="about">
+        <div class="section-label">ABOUT ME</div>
+        <div class="content">
+ 
+            <div class="about-stage" id="aboutStage">
+ 
+                <div class="about-visual">
+ 
+                    <div class="about-illustration" aria-hidden="true">
+                        <img src="images/desktop_ladybug.png" alt="">
+                    </div>
+ 
+            <div class="about-detail-wrap">
+                <div class="about-title-slot" id="titleSlot"></div>
+
+                <!-- ABOUT ME -->
+                <div class="about-detail about-detail--intro" data-key="intro">
+
+                    <div class="about-detail-media">
+                        <img
+                            src="images/super_saud.jpg"
+                            alt="A storybook illustrated by a young Dina"
+                        >
+                        <span class="about-media-caption">As a child, I'd write storybooks for my brother.</span>
+                    </div>
+
+                    <div class="about-detail-content">
+                        <p class="detail-lede">
+                            I was drawn to inventing stories long before I understood what they were capable of.
+                        </p>
+
+                        <p class="detail-text">
+                            That instinct is still doing the driving, well into adulthood, even though the skillset available to me has evolved: I'm 22 now, based in Riyadh, and <b>depending on the week, I might introduce myself as a designer, a developer, a technical artist, or a writer.</b> Each one just describes a different tool I picked up to build the same thing: a world convincing enough that others want to live in it with me.
+                        </p>
+
+                        <p class="detail-text">
+                            I care about work that sits at the intersection of technology and craft, where an innovative idea gets to be taken seriously enough to become real. Give me a strong premise and enough room to actually explore it, and I'm the most useful version of myself.
+                        </p>
+
+                        <p class="detail-text detail-text--personal">
+                            Outside of that, my life is smaller and more ordinary: frequenting the cinema for its new releases, losing to my younger brothers at Mario Party, a pot of overnight oats in the fridge for tomorrow, and a stack of literary fiction I'm slowly working through.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <!-- SKILLS -->
+                <div class="about-detail about-detail--skills" data-key="skills">
+                    <div class="skills-list">
+
+                        <div class="skill-group">
+                            <div class="skill-number">01</div>
+                            <div>
+                                <p class="skill-cat">Interactive</p>
+                                <p class="skill-items">Gameplay programming · Technical design · Systems architecture · Tools programming · Prototyping</p>
+                            </div>
+                        </div>
+
+                        <div class="skill-group">
+                            <div class="skill-number">02</div>
+                            <div>
+                                <p class="skill-cat">Art</p>
+                                <p class="skill-items">Technical art · 3D modelling · Texturing & Rendering · Look development · Lighting · Rigging · 2D/3D animation · Illustration</p>
+                            </div>
+                        </div>
+
+                        <div class="skill-group">
+                            <div class="skill-number">03</div>
+                            <div>
+                                <p class="skill-cat">Direction</p>
+                                <p class="skill-items">Creative direction · Visual identity · Typography · Design strategy · Deck design</p>
+                            </div>
+                        </div>
+
+                        <div class="skill-group">
+                            <div class="skill-number">04</div>
+                            <div>
+                                <p class="skill-cat">Front-end</p>
+                                <p class="skill-items">UI/UX · HTML/CSS/JavaScript · Creative coding</p>
+                            </div>
+                        </div>
+
+                        <div class="skill-group">
+                            <div class="skill-number">05</div>
+                            <div>
+                                <p class="skill-cat">Voice</p>
+                                <p class="skill-items">Narrative design · Copywriting · Verbal identity · Creative writing</p>
+                            </div>
+                        </div>
+
+                        <div class="skill-group">
+                            <div class="skill-number">06</div>
+                            <div>
+                                <p class="skill-cat">Tools</p>
+                                <p class="skill-items">Unity · Autodesk Maya · Blender · Adobe Creative Suite · C# · Figma</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EDUCATION -->
+                <div class="about-detail about-detail--education" data-key="education">
+
+                    <div class="education-photo">
+                        <img
+                            src="images/grad.JPG"
+                            alt="Graduation portrait"
+                        >
+                        <span class="about-media-caption">Grad day, with my parents.</span>
+                    </div>
+
+                    <div class="education-content">
+
+                        <div class="education-header">
+                            <div class="education-year">
+                                2022—26
+                            </div>
+                        </div>
+
+                        <div class="education-degree-block">
+
+                            <p class="edu-school">
+                                University of California, Los Angeles
+                            </p>
+
+                            <p class="edu-degree">
+                                B.A. in Design Media Arts
+                            </p>
+
+                            <div class="education-honors">
+                                <span>Magna Cum Laude</span>
+                                <span>3.76 / 4.0</span>
+                            </div>
+
+                        </div>
+
+                        <div class="education-description">
+                            <p class="detail-text">
+                                UCLA's DMA program focuses on a comprehensive, multidisciplinary approach to artistic practice through experimentation and innovative thinking. They synthesize practice, history, and theory and hybridize technologies, discourses, and audiences.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DESIGN PHILOSOPHY -->
+                <div class="about-detail about-detail--philosophy" data-key="philosophy">
+
+                    <div class="philosophy-statement">
+
+                        <p class="philosophy-lede">
+                            Every idea already knows what it wants to be made of.
+                        </p>
+
+                        <div class="philosophy-mark">↳</div>
+                    </div>
+
+                    <div class="philosophy-copy">
+                        <p class="detail-text">
+                            Most disciplines ask you to fall in love with a medium. I think that's backwards. The medium is never the thing I'm loyal to; the idea comes first, and <em>it</em> decides what vehicle it needs to become real. Sometimes that's a game, sometimes it's code, sometimes it's an animation that takes weeks to sequence.
+                        </p>
+
+                        <p class="detail-text">
+                            That's the entire reason I stay multidisciplinary. To me, committing to one technique means deciding, in advance, what kind of ideas I'm allowed to have. I'd rather stay capable of following a concept wherever its best form happens to live, even if that means learning a new tool to get there.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+ 
+                </div>
+ 
+                <div class="about-menu" id="aboutMenu">
+                    <button class="about-header" data-key="intro" type="button">
+                        <span class="dot"></span><span class="label-text">about me</span>
+                    </button>
+                    <button class="about-header" data-key="skills" type="button">
+                        <span class="dot"></span><span class="label-text">skills</span>
+                    </button>
+                    <button class="about-header" data-key="education" type="button">
+                        <span class="dot"></span><span class="label-text">education</span>
+                    </button>
+                    <button class="about-header" data-key="philosophy" type="button">
+                        <span class="dot"></span><span class="label-text">design philosophy</span>
+                    </button>
+                </div>
+ 
+            </div>
+ 
+            <div class="about-footer"> 
+                <p> 
+                    <a href="mailto:dinalkhateeb@gmail.com">dinalkhateeb@gmail.com</a> / 
+                    <a href="https://www.linkedin.com/in/dina-alkhateeb/" target="_blank" rel="noopener noreferrer">linkedin</a> / 
+                    <a href="https://www.instagram.com/ladeebugs/" target="_blank" rel="noopener noreferrer">instagram</a> 
+                </p> 
+            </div>
+ 
+        </div>
+    </div>
+
+        <!-- Projects Section -->
+        <!--
+          Structure: one .content holds two swappable views —
+            1. #galleryView   – the scrolling stack of .project-card summaries
+            2. .detail-view   – one full case-study per project (only 1 built
+                                 out so far, see #detail-face-value), plus a
+                                 shared #detail-placeholder stub for any card
+                                 that doesn't have its own yet.
+          Only one is visible at a time; script.js-equivalent below (bottom
+          of file) toggles them and never touches layout elsewhere.
+
+          TO ADD A NEW PROJECT WITH ITS OWN CASE STUDY:
+            1. Duplicate a .project-card block in #galleryView, give it a
+               new unique data-project="your-id".
+            2. Duplicate the <div class="detail-view" id="detail-face-value">
+               block just below, rename its id to "detail-your-id" (must
+               match data-project exactly), and replace the content with
+               the real case study. Not every project needs every component
+               used here (facts grid, downloads, pivot highlight, flow
+               diagram, etc.) — use .detail-quote/.detail-highlight/
+               .detail-flow/.detail-list only where they genuinely fit that
+               project's structure; a simpler project can just use
+               .detail-meta + .detail-tags + plain <p> sections, as in the
+               original template.
+          Any card whose data-project has no matching "detail-<id>" element
+          automatically falls back to the shared "coming soon" stub — so new
+          cards work immediately even before you've written the case study.
+        -->
+        <div class="section" data-section="projects">
+            <div class="section-label">PROJECTS</div>
+            <div class="content">
+
+                <!-- ===== Gallery view ===== -->
+                <div id="galleryView">
+                    <h1>A selection of work I'm especially proud to share.</h1>
+                    <!-- Featured: the strongest project gets a full-width
+                         hero treatment, separate from the grid below, so
+                         the panel signals "start here" instead of listing
+                         six projects as if they carry equal weight. -->
+                    <div class="project-featured" data-project="face-value">
+                        <div class="project-thumb project-thumb--featured">
+                            <video autoplay muted loop playsinline>
+                                <source src="videos/FV_Thumbnail.mp4" type="video/mp4">
+                            </video>
+                            <span class="project-badge">FEATURED</span>
+                        </div>
+                        <div class="project-info">
+                            <div class="project-meta">Interactive Installation · 2026</div>
+                            <h3 class="project-title">Face Value</h3>
+                            <p class="project-desc">A real-time facial-tracking installation exploring the gap between how we experience ourselves and how a machine decodes us.</p>
+                            <div class="project-tags">
+                                <span class="tag">Unity</span>
+                                <span class="tag">Blender</span>
+                                <span class="tag">MediaPipe</span>
+                            </div>
+                            <span class="project-cta">View case study</span>
+                        </div>
+                    </div>
+
+                    <div class="project-grid">
+
+                        <div class="project-card" data-project="bedroom-scene">
+                            <div class="project-thumb"><img src="images/Full_Bedroom.jpg" alt="Full Render View"></div>
+                            <div class="project-info">
+                                <div class="project-meta">Animated Film · 2025</div>
+                                <h3 class="project-title">In My Head, I Go Nowhere</h3>
+                                <p class="project-desc">Turning an internal state into a physical space. A 3D animated short about isolation.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Autodesk Maya</span>
+                                    <span class="tag">After Effects</span>
+                                    <span class="tag">Premiere Pro</span>
+                                </div>
+                                <span class="project-cta">View details and documentation</span>
+                            </div>
+                        </div>
+
+                        <div class="project-card" data-project="asset-creation">
+                            <div class="project-thumb">
+                            <video autoplay muted loop playsinline>
+                                <source src="videos/Project2.mp4" type="video/mp4">
+                            </video>
+                            </div>
+                            <div class="project-info">
+                                <div class="project-meta">3D Asset · 2025</div>
+                                <h3 class="project-title">Perception Study</h3>
+                                <p class="project-desc">An investigation of how a static subject can evoke shifting interpretations through changes in perceived context.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Blender</span>
+                                    <span class="tag">Premiere Pro</span>
+                                </div>
+                                <span class="project-cta">View details and documentation</span>
+                            </div>
+                        </div>
+
+                        <div class="project-card" data-project="sibylla-merian">
+                            <div class="project-thumb"><img src="images/Sibylla_Texture_Teal.png" alt="Macro image of a butterfly wing"></div>
+                            <div class="project-info">
+                                <div class="project-meta">Design System · 2026</div>
+                                <h3 class="project-title">Sibylla Merian</h3>
+                                <p class="project-desc">A collaborative project developing an independent organization's design system and brand identity from the ground up.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Figma</span>
+                                </div>
+                                <span class="project-cta">View details and documentation</span>
+                            </div>
+                        </div>
+
+                        <div class="project-card" data-project="alienation">
+                            <div class="project-thumb"><video autoplay muted loop playsinline>
+                                <source src="videos/Alienation_Cooking3.mp4" type="video/mp4">
+                            </video></div>
+                            <div class="project-info">
+                                <div class="project-meta">Game · 2024</div>
+                                <h3 class="project-title">Alienation</h3>
+                                <p class="project-desc">A narrative-driven game about navigating unfamiliar systems and the pressure of performing belonging as an outsider.</p>
+                                <div class="project-tags">
+                                    <span class="tag">Unity</span>
+                                    <span class="tag">Blender</span>
+                                </div>
+                                <span class="project-cta">View details and documentation</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="site-project"> 
+                        <div class="site-project-heading"> 
+                            <span class="site-project-kicker">THIS WEBSITE, TOO.</span> 
+                            <span class="site-project-year">Independent Developer · 2026</span> 
+                        </div> 
+                        <div class="site-project-body"> 
+                            <p class="site-project-note"> A project that doubles as its own documentation. Just take a look around. </p> 
+                            <div class="site-project-meta"> 
+                                <span>HTML · CSS · JavaScript</span> 
+                            </div> 
+                        </div> 
+                    </div>
+                </div>
+
+                <!-- ===== Case study: Face Value (senior capstone, fully built out) ===== -->
+                <div class="detail-view" id="detail-face-value">
+                    <button class="detail-back">← Back to projects</button>
+
+                    <h1 class="detail-title">Face Value</h1>
+                    <p class="detail-subtitle">Make a face. Watch a machine misread it back to you.</p>
+
+                    <div class="detail-hero">
+                     <video autoplay muted loop playsinline>
+                       <source src="videos/Face_Value_Gameplay.mp4" type="video/mp4">
+                     </video>
+                    </div>
+
+                    <div class="detail-hero-byline">
+                        For further visual documentation, see the end.
+                    </div>
+
+                     <!-- Placeholder download links — point these at the real
+                         build files once they're hosted somewhere. -->
+                    <div class="detail-downloads">
+                        <a href="#" class="download-btn">↓ Windows build</a>
+                        <a href="#" class="download-btn">↓ macOS build</a>
+                    </div>
+
+                    <div class="detail-facts">
+                        <div class="detail-fact">
+                            <div class="fact-label">Role</div>
+                            <div class="fact-value">Solo developer; full concept-to-execution ownership</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Timeframe</div>
+                            <div class="fact-value">10 weeks (March — June 2026)</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Type</div>
+                            <div class="fact-value">Senior capstone for B.A. in Design Media Arts</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Tools</div>
+                           <div class="fact-value">
+                            Unity, Blender, MediaPipe (via the open-source <a href="https://github.com/homuler/MediapipeUnityPlugin" target="_blank" rel="noopener noreferrer">plugin</a> by homuler)
+                        </div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Hardware</div>
+                            <div class="fact-value">Logitech MX Brio 705 webcam, Minisforum mini PC, flat panel monitor</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-body">
+
+                        <div class="detail-section">
+                            <h2>Project Statement</h2>
+                            <p class="detail-quote">Face Value is an interactive installation where a digital character mirrors the facial expressions and head movements of its audience in real time. Built with machine vision and facial landmark tracking, the work examines what happens when something as immediate and intuitive as a facial expression is translated into data.</p>
+                            <p class="detail-quote">A smile, a frown, or a blink may feel unambiguous to the person making it, but to a computational system, each becomes a set of measurable features mapped onto predefined categories. The avatar responds in ways that are recognisable, yet never quite right. In this subtle mismatch, Face Value makes visible the distance between how we experience ourselves and how a machine learns to interpret us.</p>
+                            <p class="detail-quote">By inviting viewers to test the system through their own expressions, the installation turns self-presentation into a live exchange between human and machine. What begins as an attempt to make an avatar mirror us becomes an encounter with the limits of that reflection.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>The Brief</h2>
+                            <p>The capstone brief was intentionally open-ended: develop an original project representative of the skillset and research built over four years in the program, supported by an artist statement and ongoing peer critique. Beyond "make something that reflects your practice," there were no constraints on medium or scope. We were handed full creative autonomy, and full responsibility for defining the problem worth solving.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Objectives</h2>
+                            <p>I'd spent the previous four years demonstrating I could design. For this project, my ambitions quickly became about proving I could build, which meant establishing a constraint at the outset. The interface had to be engineered from the mechanics upward, with an interaction model that was innovative without being too complex.</p>
+                            <p>I did not want to fall back on a conventional WASD scheme simply because it was legible, nor did I want the controls to exist as a functional layer beneath the visual design. The way the player understood the system had to be considered as carefully as the system itself.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>The Idea</h2>
+                            <p>Gallery installations compete for attention that's in short supply. Attendees can pick from dozens of other projects vying for the same thirty seconds, and almost none of them are willing to sit with a stranger's work long enough to learn a control scheme or wait for a narrative to justify itself. <b>Soon into the quarter, I realised I was effectively designing for zero onboarding in a public, passive-audience context.</b></p>
+                            <p>It was from this very challenge that an idea was born. I was getting ready one morning, caught my own reflection, and noticed how easy it was to lose several minutes watching my own face move. Nothing was being asked of me in that moment, and yet I couldn't look away. <b>I pictured a project the player could operate using nothing but their own expression,</b> with no controller and no learning curve standing between them and the piece. The logic was almost embarrassingly simple once I had it: every person walking through the exhibit already knew how to make a face.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>The Problem</h2>
+                            <p>I had never built anything requiring facial tracking, and Unity has no built-in solution for it.</p>
+
+                            <h3>Evaluating Options</h3>
+                            <p>My instructors pointed me toward a few paths, such as dedicated facial mocap tools, or rebuilding the project in p5.js/TouchDesigner, an environment I had never used. Both would have meant abandoning either my existing engine fluency or sacrificing my project timeline. Instead, I chose to solve the problem inside the tool I already knew well, which meant finding a way to get real-time facial data into Unity myself.</p>
+
+                            <h3>Finding and Validating the Pipeline</h3>
+                            <p>Research led me to MediaPipe, Google's open-source framework for real-time, on-device ML pipelines, and from there to a community-built Unity plugin. I validated the pipeline in stages before committing:</p>
+                            <ul class="detail-list">
+                                <li>Imported the plugin and ran its sample scene to confirm whether webcam input and face-mesh tracking worked at all.</li>
+                                <li>Confirmed the plugin's Face Landmarker tools could generate actual blendshape values by modifying the sample script to print blendshape scores to console.</li>
+                                <li>Only once both were confirmed did I move on to using that data for anything.</li>
+                            </ul>
+                            <p>This staged validation made sure that every subsequent hour of work was built on a foundation I'd already proven, rather than discovering a dead end deep into production.</p>
+
+                            <h3>Building the Input-to-Animation Bridge</h3>
+                            <p>MediaPipe's blendshape output is normalized (0–1); conveniently, the same scale Blender's shape keys use. That meant the cleanest path to an actual character response was a direct mapping: MediaPipe blendshape → Unity script → Blender shape key.</p>
+                            <p>I built and tested this on a simple placeholder head — "Thrawn," after the Star Wars character — with four shape keys, to confirm the technical pipeline worked before spending time on character design.</p>
+                            <div class="detail-image-pair">
+                                <div class="detail-image-frame">
+                                    <img src="images/Thrawn_In_Full.png" alt="Thrawn character model">
+                                </div>
+
+                                <div class="detail-image-frame">
+                                    <img src="images/Thrawns_Shapekeys.png" alt="Thrawn facial shape keys">
+                                </div>
+                            </div>
+                            <p>After importing Thrawn into Unity, I wrote a bridge script that exposed each shape key to the Unity inspector, then mapped MediaPipe's output values to those fields in the tracking callback: a smile from the player increases <em>mouthSmileLeft</em> and <em>mouthSmileRight</em> (0–1) → the driver stores it → converts it to a 0–100 shape key value → the character animates using its SmileLeft and SmileRight sliders.</p>
+                            <div class="detail-video">
+                                <video controls playsinline>
+                                    <source src="videos/Testing_Thrawn.mp4" type="video/mp4">
+                                    Your browser does not support the video element.
+                                </video>
+                            </div>
+                            <p>Once Thrawn animated correctly from live webcam input, the project's fundamental feasibility was no longer in question. That milestone landed at the project's midterm review.</p>
+
+                            <h3>Scaling Up and the Problems That Came With It</h3>
+                            <p>Moving from a 4-key test head to an 11-key final character (blinks, smiles, frowns, brow motion, jaw) surfaced problems that hadn't existed at small scale:</p>
+                            <ul class="detail-list">
+                                <li><b>Raw mapping looked exaggerated and uncanny</b> — MediaPipe's blendshape values are tuned for maximum expressiveness, and a 1:1 mapping made the character look like it was overacting. Addressed with intensity multipliers, clamped maximums, smoothing, and dead zones hand-tuned per shape key.</li>
+                                <li><b>Some tracking data was simply unreliable</b> — frown detection barely registered even at maximum effort. Compensated with a targeted amplification of that response curve specifically, since over-amplifying everything would have reintroduced the exaggeration problem.</li>
+                            </ul>
+
+                            <div class="detail-highlight">
+                                <div class="detail-highlight-label">Turning point</div>
+                                <p>While tuning these curves, I ran into the limits of the technology itself: no matter how much I adjusted response curves and added new shape keys, MediaPipe could approximate expressions but never capture their nuance. The tool that was supposed to deliver the mirror-like accuracy I wanted for the interaction was, structurally, incapable of it.</p>
+                                <p>Instead of treating that as a failure to engineer around, I reimagined it as the project's real subject. The gap between how the viewer feels their expression and how the system decodes it became the installation's thematic core — what is gained, lost, or transformed when identity is translated into data? The characters I'd originally designed for relatability became a vehicle for viewers to see themselves reinterpreted, slightly wrong, by a system that only partially understands them. This reframing came directly out of the technical debugging process.</p>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Process & Iteration</h2>
+                            <p>With the core interaction proven and the concept honed, remaining work moved quickly:</p>
+                            <ul class="detail-list">
+                                <li><b>Head/neck rig driven by tracked head movement,</b> with heavy smoothing and dampening, which reduced uncanny jitters and made viewers recognize themselves as the clear source of the character's motion.</li>
+                                <li><b>Three full characters and environments</b> (Gem, Pinkie, Aurelian respectively), each built on the same 11 shape keys so the same driver script and mapping logic could be reused across all of them.</li>
+                                <li><b>A timer-based scene cycler</b> instead of a menu or intro screen — a choice to keep zero onboarding as a hard constraint through to the final build.</li>
+                                <li><b>Cross-demographic playtesting</b> specifically to check for tracking bias across different faces, since MediaPipe's accuracy wasn't guaranteed to be uniform.</li>
+                            </ul>
+                            <div class="detail-image-trio">
+                                <div class="detail-image-frame">
+                                    <img src="images/Gem_Front.png" alt="Gem character">
+                                </div>
+
+                                <div class="detail-image-frame">
+                                    <img src="images/Pinkie_Front.png" alt="Pinkie character">
+                                </div>
+
+                                <div class="detail-image-frame">
+                                    <img src="images/Aurelian_Front.png" alt="Aurelian character">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Deployment Engineering</h2>
+                            <p>Getting a working prototype to survive <b>24/7 operation for two weeks unattended in a gallery</b> surfaced an entirely separate category of problem from the design work:</p>
+                            <ul class="detail-list">
+                                <li>Viewers stepping out of frame left the character frozen on their last expression. Fixed by scripting a timeout that zeroes all blendshapes when no face is tracked for a set duration, resetting to neutral for the next viewer.</li>
+                                <li>The project was initially developed on a Mac with a built-in camera, but the exhibition used an external USB webcam on Windows. I created a camera fallback system ("use the preferred device if present, otherwise fall back to the first available camera") to guarantee the build wouldn't fail to launch on unfamiliar hardware.</li>
+                                <li>The Windows build failed to initialize the webcam at all despite correct permissions. Diagnosed via player.log that MediaPipe's LocalResourceManager only functions inside the Unity Editor, not in a built executable. Resolved by switching to StreamingAssetsResourceManager and manually reorganizing the plugin's resource files into StreamingAssets so they'd be accessible at runtime.</li>
+                            </ul>
+                            <p>Validated all fixes with a full 24-hour unattended stress test before committing to the install.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Physical Install</h2>
+                            <p>With the software validated, I installed the piece independently in the gallery: wall-mounted the display via VESA mount, fabricated and painted a custom ventilated enclosure for the mini PC (no floor or table space was available), and handled cable management for a clean public-facing presentation.</p>
+                           <div class="detail-image-pair detail-image-pair--installation">
+                                <div class="detail-image-frame">
+                                    <img src="images/FV_Equipment.jpeg" alt="Face Value equipment and enclosure">
+                                </div>
+
+                                <div class="detail-image-frame">
+                                    <img src="images/FV_Install_Afar.png" alt="Face Value installation viewed from afar">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Tools & Pipeline</h2>
+                            <div class="detail-flow">
+                                <span class="flow-step">Blender (modeling + shape keys)</span>
+                                <span class="flow-arrow">→</span>
+                                <span class="flow-step">MediaPipe (face/landmark detection)</span>
+                                <span class="flow-arrow">→</span>
+                                <span class="flow-step">Unity bridge script (blendshape → shape key)</span>
+                                <span class="flow-arrow">→</span>
+                                <span class="flow-step">Per-expression response curve tuning</span>
+                                <span class="flow-arrow">→</span>
+                                <span class="flow-step">Unity build + StreamingAssets fix</span>
+                                <span class="flow-arrow">→</span>
+                                <span class="flow-step">Physical installation</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h2>Result</h2>
+                            <p>Face Value opened on June 4, 2026, and ran continuously through de-installation on June 15. During gallery-sitting shifts, I observed that nearly every passing viewer stopped to engage far longer than a typical gallery glance. They never once needed an explanation of the controls. The project achieved its core design goal: an installation that captured passive audiences immediately, using an interface as natural as making a face.</p>
+                            <div class="final-documentation">
+
+                                <!-- Scene 01 — Pinkie -->
+                                <div class="final-scene">
+                                    <div class="final-scene-image">
+                                        <img src="images/Scene_1_Pinkie.jpg" alt="Scene 1 featuring Pinkie">
+                                    </div>
+
+                                    <div class="final-scene-video">
+                                        <video class="lulu-video" autoplay muted loop playsinline>
+                                            <source src="videos/Lulu_Playing.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+
+                                <!-- Scene 02 — Gem -->
+                                <div class="final-scene">
+                                    <div class="final-scene-image">
+                                        <img src="images/Scene_2_Gem.jpg" alt="Scene 2 featuring Gem">
+                                    </div>
+
+                                    <div class="final-scene-video">
+                                        <video autoplay muted loop playsinline controls>
+                                            <source src="videos/Mansour_Playing.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+
+                                <!-- Scene 03 — Aurelian -->
+                                <div class="final-scene">
+                                    <div class="final-scene-image">
+                                        <img src="images/Scene_3_Aurelian.jpg" alt="Scene 3 featuring Aurelian">
+                                    </div>
+
+                                    <div class="final-scene-video">
+                                       <video autoplay muted loop playsinline controls>
+                                            <source src="videos/Ghaith_Playing.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="detail-view" id="detail-bedroom-scene">
+                    <button class="detail-back">← Back to projects</button>
+
+                    <h1 class="detail-title">In My Head, I Go Nowhere</h1>
+                    <p class="detail-subtitle">Turning an internal state into a physical space.</p>
+
+                    <div class="detail-hero">
+                     <video controls loop playsinline>
+                        <source src="videos/In_My_Head.mp4" type="video/mp4">
+                    </video>
+                    </div>
+
+                    <div class="detail-hero-byline">
+                        Warning for headphone users. Audio uses deep pitch frequency waves.
+                    </div>
+
+                    <div class="detail-facts">
+                        <div class="detail-fact">
+                            <div class="fact-label">Role</div>
+                            <div class="fact-value">Full-stack 3D production across art, animation, scripting, and post-production</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Timeframe</div>
+                            <div class="fact-value">7 weeks (April — May 2025)</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Type</div>
+                            <div class="fact-value">Self-Directed Short Film for 3D Animation</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Tools</div>
+                           <div class="fact-value">
+                            Autodesk Maya, Adobe After Effects, Adobe Premiere Pro
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-body">
+                        <div class="detail-section">
+                            <h2>Project Statement</h2>
+                            <p class="detail-quote">An investigation into the narrative potential of 3D space. As my introduction to 3D modelling, the project provided an opportunity to consider what an environment can contribute beyond its conventional role as setting: how spatial relationships, atmosphere, materiality, and the boundaries of a physical space can communicate character and emotion in their own right. The room and cave consequently function  as extensions of the psychological state they contain.</p>
+                            <p class="detail-quote">Solitude can offer a sense of autonomy and refuge, but the boundary between chosen solitude and self-isolation is not always easily maintained. Conceptually, this short film considers the psychological tension that comes with the awareness that a familiar form of retreat has become confining, coupled with the inertia that makes leaving it feel almost impossible.</p>
+                        </div>
+                     </div>
+
+                    <div class="detail-media-gallery">
+
+                        <div class="detail-media-viewport">
+
+                            <div class="detail-media-slide landscape active">
+                                <img
+                                    src="images/Full_Bedroom.jpg"
+                                    alt="Bedroom scene render">
+                            </div>
+
+                            <div class="detail-media-slide portrait">
+                                 <img
+                                    src="images/Bed_Closeup.jpg"
+                                    alt="Close up of bed">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Poster_Closeup.jpg"
+                                    alt="Close up of bedroom posters">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Makeup_Render.jpg"
+                                    alt="Close up of vanity">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/On_Bed.jpg"
+                                    alt="Bed alternate view">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Light.jpg"
+                                    alt="Desk lamp render">
+                            </div>
+
+                            <div class="detail-media-slide portrait">
+                                <video autoplay muted loop playsinline>
+                                    <source src="videos/winds.mp4" type="video/mp4">
+                                </video>
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Cave_Still.jpg"
+                                    alt="Cave render">
+                            </div>
+
+                            <div class="detail-media-slide portrait">
+                                <video autoplay muted loop playsinline>
+                                    <source src="videos/Cave_Video.mp4" type="video/mp4">
+                                </video>
+                            </div>
+
+                        </div>
+
+                        <div class="detail-media-controls">
+
+                            <button
+                                class="detail-media-arrow"
+                                id="bedroomGalleryPrev"
+                                type="button"
+                                aria-label="Previous image">
+                                ←
+                            </button>
+
+                            <span
+                                class="detail-media-counter"
+                                id="bedroomGalleryCounter">
+                                01 / 10
+                            </span>
+
+                            <button
+                                class="detail-media-arrow"
+                                id="bedroomGalleryNext"
+                                type="button"
+                                aria-label="Next image">
+                                →
+                            </button>
+
+                        </div>
+
+                        <div class="detail-case-study-note">
+                        <div class="note-label">
+                            Case study coming soon
+                        </div>
+                        <p>
+                            The full process documentation, development notes, and production
+                            breakdown for this project are currently being written.
+                        </p>
+                    </div>
+                    </div>
+                    
+                </div>
+
+                <div class="detail-view" id="detail-asset-creation">
+                    <button class="detail-back">← Back to projects</button>
+
+                    <h1 class="detail-title">Perception Study</h1>
+
+                    <div class="detail-hero">
+                     <video controls loop playsinline>
+                        <source src="videos/Project2.mp4" type="video/mp4">
+                    </video>
+                    </div>
+
+                    <div class="detail-hero-byline">
+                        Warning for headphone users. Audio uses deep pitch frequency waves.
+                    </div>
+
+                    <div class="detail-facts">
+                        <div class="detail-fact">
+                            <div class="fact-label">Role</div>
+                            <div class="fact-value">3D Character Artist;  modelling, texturing, shading, lighting, and production</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Timeframe</div>
+                            <div class="fact-value">3 weeks (May — June 2025)</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Type</div>
+                            <div class="fact-value">Lighting and Digital Character Asset Study</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Tools</div>
+                           <div class="fact-value">
+                            Blender, Adobe Premiere Pro
+                        </div>
+                    </div>
+                </div>
+
+                    <div class="detail-body">
+
+                             <div class="detail-section">
+                                <h2>Project Statement</h2>
+                                <p class="detail-quote">A digital portrait study exploring the relationship between visual perception and personal interpretation. The project examines how viewers construct narratives around unfamiliar faces, projecting an assumed identity onto a subject based solely on the limited context available to them.</p>
+                                <p class="detail-quote">Presented through orbiting lights across a static 3D head, the piece uses lighting as a tool for revealing how perception changes even when the subject itself remains unchanged. As shadows move across the face, subtle variations in expression and mood might emerge based on the viewer’s own interpretation.</p>
+                            </div>
+                    </div>
+
+                    <div class="detail-media-gallery">
+
+                        <div class="detail-media-viewport">
+
+                            <div class="detail-media-slide landscape active">
+                                <img
+                                    src="images/Front_View_P2.png"
+                                    alt="Front view render.">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                 <img
+                                    src="images/Side_View_P2.png"
+                                    alt="Side profile version 1 render">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Alt_Side_View_P2.png"
+                                    alt="Side profile version 2 render">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Quarter_View_P2.png"
+                                    alt="Quarter profile render">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Lower_View_P2.png"
+                                    alt="Angled quarter profile render">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Model_View_1_P2.png"
+                                    alt="Model wireframe view 1">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Model_View_2_P2.png"
+                                    alt="Model wireframe view 2">
+                            </div>
+
+                        </div>
+
+                        <div class="detail-media-controls">
+
+                            <button
+                                class="detail-media-arrow"
+                                id="bedroomGalleryPrev"
+                                type="button"
+                                aria-label="Previous image">
+                                ←
+                            </button>
+
+                            <span
+                                class="detail-media-counter"
+                                id="bedroomGalleryCounter">
+                                01 / 07
+                            </span>
+
+                            <button
+                                class="detail-media-arrow"
+                                id="bedroomGalleryNext"
+                                type="button"
+                                aria-label="Next image">
+                                →
+                            </button>
+
+                        </div>
+
+                        <div class="detail-case-study-note">
+                        
+                            <div class="note-label">
+                            Case study coming soon
+                        </div>
+                        <p>
+                            The full process documentation, development notes, and production
+                            breakdown for this project are currently being written.
+                        </p>
+                        </div>
+                    
+                    </div>
+
+                </div>
+
+                <div class="detail-view" id="detail-alienation">
+
+                    <button class="detail-back">← Back to projects</button>
+
+                    <h1 class="detail-title">Alienation</h1>
+
+                    <div class="detail-hero">
+                     <video controls loop playsinline>
+                        <source src="videos/Alienation_Gameplay.mp4" type="video/mp4">
+                    </video>
+                    </div>
+
+                    <div class="detail-facts">
+                        <div class="detail-fact">
+                            <div class="fact-label">Role</div>
+                            <div class="fact-value">Game Designer & Technical Artist; character pipeline, rigging, animation, and implementation</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Timeframe</div>
+                            <div class="fact-value">6 weeks (October — November 2024)</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Type</div>
+                            <div class="fact-value">Character-driven 3D Game Prototype</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Tools</div>
+                           <div class="fact-value">
+                            Unity, Blender, Mixamo, Procreate
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-body">
+                             <div class="detail-section">
+                                <h2>Project Statement</h2>
+                                <p class="detail-quote">Alienation is an interactive exploration of what it means to navigate a world where belonging depends on understanding rules that were never written for you. Set on a hostile alien planet, the game follows a human disguised as an alien who must infiltrate an unfamiliar society by taking on the role of a chef. To survive, the player must perform everyday tasks while concealing the fact that they do not truly understand the world around them.</p>
+                                <p class="detail-quote">The game translates the experience of being an outsider into its core mechanics. In the opening grocery store sequence, players navigate a disorienting maze-like environment in search of ingredients, mirroring the confusion of entering a space where familiar structures no longer apply. The cooking segment further reinforces this disconnect by presenting recipes written in an unreadable alien language, forcing players to react to unfamiliar information through experimentation and intuition alone.</p>
+                            </div>
+                    </div>
+
+                    <div class="detail-media-gallery">
+
+                        <div class="detail-media-viewport">
+
+                            <div class="detail-media-slide landscape">
+                                <video autoplay muted loop playsinline>
+                                    <source src="videos/Alienation_WalkCycle.mp4" type="video/mp4">
+                                </video>
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Alienation_TPose.png"
+                                    alt="Character model in T-pose">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <video autoplay muted loop playsinline>
+                                    <source src="videos/Alienation_Cooking3.mp4" type="video/mp4">
+                                </video>
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Alienation_Title.png"
+                                    alt="Title screen">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Alienation_Win.png"
+                                    alt="Win state title card">
+                            </div>
+
+                            <div class="detail-media-slide landscape">
+                                <img
+                                    src="images/Alienation_Loss.png"
+                                    alt="Loss state title card">
+                            </div>
+
+                        </div>
+
+                        <div class="detail-media-controls">
+
+                            <button
+                                class="detail-media-arrow"
+                                type="button"
+                                aria-label="Previous image">
+                                ←
+                            </button>
+
+                            <span
+                                class="detail-media-counter"
+                                id="bedroomGalleryCounter">
+                                01 / 06
+                            </span>
+
+                            <button
+                                class="detail-media-arrow"
+                                type="button"
+                                aria-label="Next image">
+                                →
+                            </button>
+
+                        </div>
+
+                        <div class="detail-case-study-note">
+                        
+                            <div class="note-label">
+                            Case study coming soon
+                        </div>
+                        <p>
+                            The full process documentation, development notes, and production
+                            breakdown for this project are currently being written.
+                        </p>
+                        </div>
+                    
+                    </div>
+                </div>
+
+                <div class="detail-view" id="detail-sibylla-merian">
+                    <button class="detail-back">← Back to projects</button>
+
+                    <h1 class="detail-title">Sibylla Merian</h1>
+                    <p class="detail-subtitle">An original fashion house with its own visual and verbal identity.</p>
+
+                    <div class="detail-hero">
+                      <img
+                         src="images/Sibylla_Logo_Transparent.png"
+                         alt="The Sibylla Merian Logo">
+                    </div>
+
+                    <div class="detail-hero-byline">
+                        Logo by team member Micky Wright
+                    </div>
+
+                     <div class="detail-facts">
+                        <div class="detail-fact">
+                            <div class="fact-label">Team</div>
+                            <div class="fact-value">August Hattiangadi, Micky Wright, Ash Erikson, Sana Indap</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Role</div>
+                            <div class="fact-value">Verbal Identity, Presentation Design, Pitch Writing</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Timeframe</div>
+                            <div class="fact-value">10 weeks (January — March 2025)</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Primary Contributions</div>
+                            <div class="fact-value">77-slide branding deck, final pitch script</div>
+                        </div>
+                        <div class="detail-fact">
+                            <div class="fact-label">Personal Tools</div>
+                            <div class="fact-value">Figma</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-body">
+                        <div class="detail-section">
+                            <h2>Project Brief</h2>
+                            <p class="detail-quote">This project simulated the structure of a professional design studio commissioned by a client to develop their brand. Working in teams of four to five, we established an original organisation, defining its purpose, audience, positioning, and strategy before translating those decisions into a complete design system.</p>
+                            <p class="detail-quote">Over the course of ten weeks, we developed the system's core elements—i.e. its logo, colour scheme, typography, motion, and material language—and applied them across multiple touchpoints including print, digital, and environmental design. The final stage was to consolidate the system into a set of brand guidelines, presented as though we were proposing the identity to a client.</p>
+                            <p class="detail-quote">Rather than simply producing a collection of assets, the project required us to build an organization with a clear point of view and a coherent internal logic, then demonstrate how that identity could operate consistently across different contexts.</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h2>The Premise</h2>
+                        <p>Sibylla Merian is a fictional haute couture house operating within a speculative society of anthropomorphic insects, where fashion reinforces culturally constructed ideals of beauty and status. The brand takes inspiration from insects conventionally perceived as beautiful, transforming their anatomy into sculptural, avant-garde couture.</p>
+                        <p>Behind the fictional brand is a satire of the real-world beauty industry: how arbitrary standards become normalized, how desirability becomes a form of social currency, and how industries profit from the desire to attain it.</p>
+                        <p>We intentionally chose an unusually fantastical premise to test the limits of our ability to make an idea feel coherent and believable; ultimately, branding is about selling an idea.</p>
+
+                        <h2>The Challenge</h2>
+                        <p>Sibylla Merian's identity had to be genuinely alluring while simultaneously carrying a critical message. To achieve this, we combined the visual language of luxury fashion with the authority of entomological research, creating a system that could function convincingly as a couture house while revealing its critique through its language and visual framework.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h2>Roles</h2>
+                            <p>
+                                Sibylla Merian was developed collaboratively by a four-person team,
+                                with each member taking ownership of a different area of the brand
+                                system. The final identity was built by bringing these workstreams
+                                together.
+                            </p>
+
+                            <h3>Team</h3>
+
+                            <ul class="detail-list">
+                                <li><strong>August</strong> — led motion and imagery, producing the campaign posters and video while developing the visual language for the brand's image-making and moving-image applications.</li>
+
+                                <li><strong>Ash</strong> — led packaging, designing the brand's physical presentation through material systems.</li>
+
+                                <li><strong>Sana</strong> — led UI/UX, developing the digital experience and exploring how the brand's visual system could function within an interactive environment.</li>
+
+                                <li><strong>Micky</strong> — led the 3D store environment, imagining the physical retail space and its spatial applications. Micky also developed the final logo for the brand.</li>
+                            </ul>
+
+                            <h3>My Contribution</h3>
+
+                            <p>
+                                My primary ownership was the brand's verbal identity. I developed
+                                the tone-of-voice guidelines and language framework that governed
+                                how Sibylla Merian communicated across its different applications.
+                            </p>
+
+                            <p>
+                                I also wrote the complete script for the final pitch, structuring
+                                ten weeks of collaborative work into a single narrative for the
+                                presentation. 
+                            </p>
+
+                            <div class="detail-pdf">
+                                <iframe
+                                    src="documents/Sibylla_Script2.pdf"
+                                    title="Sibylla Merian final presentation script">
+                                </iframe>
+                            </div>
+
+                            <p>Finally, I designed and produced the final 77-slide
+                                presentation deck in Figma, bringing the team's work together into 
+                                one presentation-ready system. 
+                            </p>
+
+                            <div class="detail-pdf">
+                                <iframe
+                                    src="documents/Sibylla_Merian_Deck.pdf"
+                                    title="Sibylla Merian pitch deck">
+                                </iframe>
+                            </div>
+
+                            <div class="detail-case-study-note">
+                        
+                                    <div class="note-label">
+                                    Case study coming soon
+                                    </div>
+                                <p>
+                                    The full process documentation, development notes, and production
+                                    breakdown for this project are currently being written.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+                <!-- ===== Shared "coming soon" stub for every other card ===== -->
+                <div class="detail-view" id="detail-placeholder">
+                    <button class="detail-back">← Back to projects</button>
+                    <h1 class="detail-title">Case study coming soon</h1>
+                    <p class="coming-soon">This project's full write-up is still in progress — check back shortly, or see the Face Value case study for the format this will follow.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= WRITING SECTION ================= -->
+
+        <div class="section" data-section="writing">
+
+            <div class="section-label">WRITING</div>
+
+            <div class="content">
+
+                <!-- ===== Writing Gallery ===== -->
+
+                <div id="writingGallery">
+
+                    <h1>Writing has always been a big part of how I think. Here are a few pieces.</h1>
+
+                    <div class="writing-grid">
+
+                        <!-- Essay 01 -->
+                        <a class="writing-card"
+                        href="#"
+                        data-essay="undertale">
+
+                            <div class="writing-thumb">
+                                <img src="images/Sans.jpg" alt="Sans from Undertale">
+                            </div>
+
+                            <div class="writing-info">
+
+                                <div class="writing-meta">
+                                    Essay · Games · 2026
+                                </div>
+
+                                <h3 class="writing-title">
+                                    Undertale and the Weight of Choice
+                                </h3>
+
+                                <p class="writing-desc">
+                                    "Moral Accountability in Toby Fox’s Independent RPG";
+                                    on why Undertale makes it difficult to separate 
+                                    the player from the choices they make. Written 
+                                    as an exploration of how mechanics can make morality 
+                                    and ethical responsibility feel personal.
+                                </p>
+
+                                <span class="writing-cta">
+                                    Read essay
+                                </span>
+
+                            </div>
+
+                        </a>
+
+                        <!-- Essay 02 -->
+                        <a class="writing-card"
+                        href="#"
+                        data-essay="trainspotting">
+
+                            <div class="writing-thumb">
+                                <img src="images/Grotesque.jpeg" alt="Gustave Doré’s Illustration for Gargantua and Pantagruel">
+                            </div>
+
+                            <div class="writing-info">
+
+                                <div class="writing-meta">
+                                    Essay · Literature Review · 2026
+                                </div>
+
+                                <h3 class="writing-title">
+                                    The Grotesque Body Politic
+                                </h3>
+
+                                <p class="writing-desc">
+                                    "The Rabelaisian Grotesque in Irvine Welsh’s Trainspotting";
+                                    an examination of how the depiction of abjection allows Irvine 
+                                    Welsh to challenge the boundaries between ugliness, beauty, 
+                                    and social resistance.
+                                </p>
+
+                                <span class="writing-cta">
+                                    Read essay
+                                </span>
+
+                            </div>
+
+                        </a>
+
+                        <!-- Essay 03 -->
+                        <a class="writing-card"
+                        href="#"
+                        data-essay="madness">
+
+                            <div class="writing-thumb">
+                                <img src="images/Caligula.png" alt="The Emperor Caligula">
+                            </div>
+
+                            <div class="writing-info">
+
+                                <div class="writing-meta">
+                                    Essay · Comparitive Literature · 2025
+                                </div>
+
+                                <h3 class="writing-title">
+                                    From Spectacle to Speech
+                                </h3>
+
+                                <p class="writing-desc">
+                                    "Voice, authorship, and the politics of madness in 
+                                    Suetonius and Tezer Özlü"; an exploration of the 
+                                    differences in genre and literary form that persons 
+                                    claiming madness utilise, and how the employment of 
+                                    the literary allows them to redefine 'madness'.
+                                </p>
+
+                                <span class="writing-cta">
+                                    Read essay 
+                                </span>
+
+                            </div>
+
+                        </a>
+
+                    </div>
+                </div>
+
+
+                <!-- ===== Essay Reader ===== -->
+
+                <div id="essayReader" class="essay-reader">
+
+                    <button class="essay-back" type="button">
+                        ← Back to writing
+                    </button>
+
+                    <div class="essay-header">
+
+                        <div id="essayMeta" class="essay-meta">
+                            Essay · Design · 2026
+                        </div>
+
+                        <h1 id="essayTitle">
+                            The Art of Simplicity
+                        </h1>
+
+                    </div>
+
+                    <div class="essay-frame">
+
+                        <iframe
+                            id="essayPDF"
+                            src=""
+                            title="Essay PDF">
+                        </iframe>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section" data-section="documents">
+            <div class="section-label">DOCUMENTS</div>
+
+            <div class="content" id="documentsGallery">
+
+                <h1>Paperwork you might want to take a peak at.</h1>
+
+                <div class="document-grid">
+
+                <div class="document-card">
+
+                    <div class="document-info">
+                        <div class="document-meta">PDF · Updated August 2026</div>
+
+                        <h3 class="document-title">Resume</h3>
+
+                        <p class="document-desc">
+                            Relevant coursework, work history, projects and honours.
+                        </p>
+                    </div>
+
+                    <div class="document-reader">
+                        <iframe
+                            src="documents/Dina_Alkhateeb_CV.pdf"
+                            title="Resume">
+                        </iframe>
+                    </div>
+
+                        <span class="document-cta"></span>
+
+                </div>
+
+                <div class="document-card">
+
+                    <div class="document-info">
+                        <div class="document-meta">PDF · Updated June 2026</div>
+
+                        <h3 class="document-title">Final Transcript</h3>
+
+                        <p class="document-desc">
+                            UCLA Transcript covering all my years of study, from September 2022-June 2026.
+                        </p>
+                    </div>
+
+                    <div class="document-reader">
+                        <iframe
+                            src="documents/Final_Transcript.pdf"
+                            title="Resume">
+                        </iframe>
+                    </div>
+
+                        <span class="document-cta"></span>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ===== Outer accordion (about / projects / writing / documents) =====
+        const sections = document.querySelectorAll('.section');
+
+        sections.forEach(section => {
+            section.addEventListener('click', function() {
+                if (this.classList.contains('expanded')) return;
+
+                sections.forEach(s => s.classList.remove('expanded'));
+                this.classList.add('expanded');
+
+                // Coming back into Projects from another section should
+                // always land on the gallery, never on whatever case study
+                // happened to be open last time it was visited.
+                if (this.dataset.section === 'projects') showGallery();
+            });
+        });
+
+        // ===== Projects: gallery <-> case study =====
+        // Exactly one of "#galleryView" or one ".detail-view" is visible at
+        // a time. Cards link to a detail view by matching data-project on
+        // the card to the id "detail-<that value>"; if no such element
+        // exists yet, everything falls back to the shared #detail-placeholder
+        // "coming soon" stub, so new cards work before their case study is written.
+        const galleryView = document.getElementById('galleryView');
+        const detailViews = document.querySelectorAll('.detail-view');
+        const placeholderDetail = document.getElementById('detail-placeholder');
+        const projectsContentEl = document.querySelector('[data-section="projects"] .content');
+
+        function showProjectDetail(projectId) {
+            const target = document.getElementById('detail-' + projectId) || placeholderDetail;
+            galleryView.style.display = 'none';
+            detailViews.forEach(view => {
+                view.style.display = (view === target) ? 'block' : 'none';
+            });
+            if (projectsContentEl) projectsContentEl.scrollTop = 0;
+        }
+
+        // Staggered entrance for the gallery cards. Re-triggered every time
+        // the gallery becomes visible (first load, returning from a case
+        // study, or switching back into the Projects panel) rather than
+        // once on page load, so the reveal is something the person actually
+        // sees each time they arrive at the gallery, not just on first visit.
+        const galleryItems = document.querySelectorAll('.project-featured, .project-card');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function revealGallery() {
+            galleryItems.forEach((item, i) => {
+                item.classList.remove('is-visible');
+                if (prefersReducedMotion) {
+                    item.classList.add('is-visible');
+                    return;
+                }
+                // Force a reflow so removing/re-adding the class restarts
+                // the animation on repeat visits, then stagger by index.
+                void item.offsetWidth;
+                item.style.animationDelay = (i * 70) + 'ms';
+                requestAnimationFrame(() => item.classList.add('is-visible'));
+            });
+        }
+
+        function showGallery() {
+            detailViews.forEach(view => { view.style.display = 'none'; });
+            galleryView.style.display = 'block';
+            if (projectsContentEl) projectsContentEl.scrollTop = 0;
+            revealGallery();
+        }
+
+        document.querySelectorAll('.project-card, .project-featured').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Prevent this from also triggering the outer section-collapse handler
+                e.stopPropagation();
+                showProjectDetail(this.dataset.project);
+            });
+        });
+
+        document.querySelectorAll('.detail-back').forEach(backBtn => {
+            backBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showGallery();
+            });
+        });
+
+        /* ================= DETAIL MEDIA GALLERIES ================= */
+
+        document.querySelectorAll(".detail-media-gallery").forEach(gallery => {
+
+            const slides = gallery.querySelectorAll(".detail-media-slide");
+            const prevButton = gallery.querySelector(".detail-media-arrow:first-child");
+            const nextButton = gallery.querySelector(".detail-media-arrow:last-child");
+            const counter = gallery.querySelector(".detail-media-counter");
+
+            let currentSlide = 0;
+
+
+            function updateGallery() {
+
+                slides.forEach((slide, index) => {
+                    slide.classList.toggle(
+                        "active",
+                        index === currentSlide
+                    );
+                });
+
+
+                // Update counter
+                if (counter) {
+                    counter.textContent =
+                        `${String(currentSlide + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+                }
+
+
+                // Disable arrows at the beginning/end
+                if (prevButton) {
+                    prevButton.disabled = currentSlide === 0;
+                }
+
+                if (nextButton) {
+                    nextButton.disabled = currentSlide === slides.length - 1;
+                }
+
+            }
+
+
+            // Previous button
+            if (prevButton) {
+
+                prevButton.addEventListener("click", () => {
+
+                    if (currentSlide > 0) {
+                        currentSlide--;
+                        updateGallery();
+                    }
+
+                });
+
+            }
+
+
+            // Next button
+            if (nextButton) {
+
+                nextButton.addEventListener("click", () => {
+
+                    if (currentSlide < slides.length - 1) {
+                        currentSlide++;
+                        updateGallery();
+                    }
+
+                });
+
+            }
+
+
+            // Start gallery
+            updateGallery();
+
+        });
+
+        (function () {
+ 
+            // Order matters: this is the order headers sit in the menu, and the
+            // order they're restored to whenever one is deactivated / whenever
+            // we cross the mobile breakpoint.
+            const ORDER = ['intro', 'skills', 'education', 'philosophy'];
+        
+            const stage   = document.getElementById('aboutStage');
+            const menu    = document.getElementById('aboutMenu');
+            const slot    = document.getElementById('titleSlot');
+            const headers = Array.from(document.querySelectorAll('.about-header'));
+            const details = Array.from(document.querySelectorAll('.about-detail'));
+        
+            let activeKey = null;
+        
+            function isMobile() {
+                return window.matchMedia('(max-width: 768px)').matches;
+            }
+        
+            // Rebuilds the menu / title-slot / detail visibility from scratch
+            // based on activeKey + current breakpoint, so it's always correct
+            // regardless of how we got here (click, resize, orientation change).
+            function render() {
+                stage.classList.toggle('is-active', !!activeKey);
+        
+                const mobileActive = isMobile() && activeKey;
+        
+                ORDER.forEach(key => {
+                    const header = headers.find(h => h.dataset.key === key);
+                    const isActive = key === activeKey;
+        
+                    header.classList.toggle('active', isActive);
+        
+                    // On mobile, the active header physically relocates out of
+                    // the horizontal row and into the title slot above its copy.
+                    // Everyone else (and everything, on desktop) lives in the menu.
+                    if (mobileActive && isActive) {
+                        slot.appendChild(header);
+                    } else {
+                        menu.appendChild(header);
+                    }
+                });
+        
+                details.forEach(d => d.classList.toggle('open', d.dataset.key === activeKey));
+            }
+        
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const key = header.dataset.key;
+                    activeKey = (activeKey === key) ? null : key;
+                    render();
+                });
+            });
+        
+            // Crossing the mobile breakpoint mid-session (resize, rotate) should
+            // never leave a header stranded in the title slot on desktop, or vice
+            // versa — re-render on resize, debounced.
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(render, 120);
+            });
+        
+            render();
+        
+        })();
+    </script>
+
+    <script>
+
+    /* ================= WRITING ESSAY READER ================= */
+
+    const writingGallery = document.getElementById("writingGallery");
+    const essayReader = document.getElementById("essayReader");
+
+    const essayPDF = document.getElementById("essayPDF");
+    const essayTitle = document.getElementById("essayTitle");
+    const essayMeta = document.getElementById("essayMeta");
+
+    const essayBack = document.querySelector(".essay-back");
+
+
+    /*
+    * Each essay gets its own PDF file.
+    *
+    * The key here must match the data-essay value
+    * on the corresponding writing card.
+    */
+
+    const essays = {
+
+        "undertale": {
+            title: "Undertale and the Weight of Choice",
+            meta: "Essay · Games · 2026",
+            pdf: "documents/Undertale_Paper_DinaAlkhateeb.pdf"
+        },
+
+        "madness": {
+            title: "From Spectacle to Speech",
+            meta: "Essay · Comparitive Literature · 2025",
+            pdf: "documents/Madness_Essay.pdf"
+        },
+
+        "trainspotting": {
+            title: "The Grotesque Body Politic",
+            meta: "Essay · Literature Review · 2026",
+            pdf: "documents/Trainspotting.pdf"
+        },
+
+        "javascript": {
+            title: "JavaScript Fundamentals",
+            meta: "Essay · Development · 2025",
+            pdf: "documents/JavaScript_Fundamentals.pdf"
+        },
+
+        "design-process": {
+            title: "Design Process",
+            meta: "Essay · Process · 2026",
+            pdf: "documents/Design_Process.pdf"
+        },
+
+        "portfolio-tips": {
+            title: "Portfolio Tips",
+            meta: "Essay · Career · 2026",
+            pdf: "documents/Portfolio_Tips.pdf"
+        }
+
+    };
+
+
+    /* ================= OPEN ESSAY ================= */
+
+    document.querySelectorAll(".writing-card").forEach(card => {
+
+        card.addEventListener("click", function(event) {
+
+            event.preventDefault();
+
+            const essayID = this.dataset.essay;
+            const essay = essays[essayID];
+
+            if (!essay) {
+                console.error("Essay not found:", essayID);
+                return;
+            }
+
+
+            /* Update title */
+
+            essayTitle.textContent = essay.title;
+
+
+            /* Update metadata */
+
+            essayMeta.textContent = essay.meta;
+
+
+            /* Load PDF */
+
+            essayPDF.src = essay.pdf;
+
+
+            /* Hide gallery */
+
+            writingGallery.style.display = "none";
+
+
+            /* Show reader */
+
+            essayReader.style.display = "block";
+
+
+            /*
+            * Move the user's view back to the top of
+            * the writing panel.
+            */
+
+            essayReader.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        });
+
+    });
+
+
+    /* ================= BACK TO WRITING ================= */
+
+    essayBack.addEventListener("click", function() {
+
+        /* Remove the PDF */
+
+        essayPDF.src = "";
+
+
+        /* Hide reader */
+
+        essayReader.style.display = "none";
+
+
+        /* Show gallery */
+
+        writingGallery.style.display = "block";
+
+
+        /* Return to the writing gallery */
+
+        writingGallery.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    });
+
+    /* ================= DOCUMENT ACCORDION ================= */
+
+        document.querySelectorAll('#documentsGallery .document-card').forEach(card => {
+
+        const info = card.querySelector('.document-info');
+        const cta = card.querySelector('.document-cta');
+
+        info.addEventListener('click', function () {
+            card.classList.toggle('is-open');
+        });
+
+        cta.addEventListener('click', function (event) {
+            event.stopPropagation();
+            card.classList.toggle('is-open');
+        });
+
+    });
+
+    </script>
+
+</body>
+</html>
