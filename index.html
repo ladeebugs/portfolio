@@ -3379,18 +3379,83 @@
                 overflow: hidden;
             }
 
-            .section:not(.expanded) {
-                flex: 0 0 60px;
+            /* --------------------------------------------------------
+            MOBILE ACCORDION
+            -------------------------------------------------------- */
+
+            .section {
+                min-height: 0;
+                min-width: 0;
+
+                /*
+                * Let flex interpolate between the collapsed and
+                * expanded states rather than jumping between them.
+                */
+                transition:
+                    flex 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                    flex-basis 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+                overflow: hidden;
             }
 
+            /*
+            * Collapsed panels remain as the slim horizontal headers.
+            */
+            .section:not(.expanded) {
+                flex: 0 1 60px;
+                min-height: 60px;
+            }
+
+            /*
+            * The selected panel takes all remaining vertical space.
+            */
             .section.expanded {
-                /*
-                * The expanded panel gets exactly the remaining
-                * viewport height.
-                */
-                flex: 1 1 auto;
+                flex: 1 1 0%;
                 min-height: 0;
+
+                /*
+                * Don't transition overflow itself — the content stays
+                * clipped while the panel physically expands.
+                */
                 overflow: hidden;
+            }
+
+            /*
+            * Important: don't let the contents establish a minimum
+            * height that prevents the flex animation from shrinking.
+            */
+            .section > .content {
+                min-height: 0;
+                min-width: 0;
+            }
+
+
+            /* --------------------------------------------------------
+            Keep the accordion animation smooth when opening/closing
+            -------------------------------------------------------- */
+
+            .section .content {
+                opacity: 0;
+                transition:
+                    opacity 0.25s ease 0s;
+            }
+
+            .section.expanded .content {
+                opacity: 1;
+                transition:
+                    opacity 0.3s ease 0.2s;
+            }
+
+
+            /* --------------------------------------------------------
+            Prevent horizontal overflow during the animation
+            -------------------------------------------------------- */
+
+            .section,
+            .section > .content,
+            .detail-view {
+                max-width: 100%;
+                min-width: 0;
             }
 
 
