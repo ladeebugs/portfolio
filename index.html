@@ -3307,7 +3307,7 @@
                 margin-bottom: 30px;
             }
         }
-        
+
         /* ============================================================
         MOBILE / iOS LAYOUT FIX
         Final overrides — place at the END of the <style> block.
@@ -3924,6 +3924,37 @@
             .about-footer p {
                 font-size: 0.62rem;
             }
+        }
+
+        /* =========================================================
+        iOS SAFARI ONLY — Documents panel
+        ========================================================= */
+
+        @supports (-webkit-touch-callout: none) {
+        @media (max-width: 768px) {
+
+            /* Give Safari's bottom browser UI some breathing room */
+            .content {
+            padding-bottom: calc(
+                32px + env(safe-area-inset-bottom)
+            );
+            }
+
+            /* Don't let the PDF/document viewer consume the entire
+            dynamic viewport underneath Safari's toolbar */
+            .document-reader,
+            .pdf-container,
+            .pdf-viewer {
+            height: calc(
+                100dvh - 180px - env(safe-area-inset-bottom)
+            ) !important;
+
+            max-height: calc(
+                100dvh - 180px - env(safe-area-inset-bottom)
+            ) !important;
+            }
+
+        }
         }
 
     </style>
