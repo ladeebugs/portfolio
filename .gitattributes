@@ -1,2 +1,2 @@
-*.mp4 filter=lfs diff=lfs merge=lfs -text
 documents/Sibylla_Merian_Deck.pdf filter=lfs diff=lfs merge=lfs -text
+videos/In_My_Head.mp4 filter=lfs diff=lfs merge=lfs -text
