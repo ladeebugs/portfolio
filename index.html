@@ -750,6 +750,13 @@
             object-fit: contain;
         }
 
+        .detail-hero iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
         .detail-title {
             font-size: 2.8rem !important;
             text-align: center;
@@ -3066,7 +3073,6 @@
             .section {
                 flex: 0 0 60px;
                 border-right: none;
-                border-bottom: 1px solid #666;
             }
 
             .section.expanded {
@@ -4112,10 +4118,10 @@
 
                     <div class="education-photo">
                         <img
-                            src="images/grad.JPG"
+                            src="images/Grad_With_Bros.jpg"
                             alt="Graduation portrait"
                         >
-                        <span class="about-media-caption">Grad day, with my parents.</span>
+                        <span class="about-media-caption">Grad day, with my two of my brothers.</span>
                     </div>
 
                     <div class="education-content">
@@ -4343,7 +4349,7 @@
                         <div class="site-project-body"> 
                             <p class="site-project-note"> A project that doubles as its own documentation. Just take a look around. </p> 
                             <div class="site-project-meta"> 
-                                <span>HTML · CSS · JavaScript</span> 
+                                <span>HTML · CSS · JavaScript · GitHub</span> 
                             </div> 
                         </div> 
                     </div>
@@ -4449,13 +4455,13 @@
                                 </div>
 
                                 <div class="detail-image-frame">
-                                    <img src="images/Thrawns_Shapekeys.png" alt="Thrawn facial shape keys">
+                                    <img src="images/Thrawns_ShapeKeys.png" alt="Thrawn facial shape keys">
                                 </div>
                             </div>
                             <p>After importing Thrawn into Unity, I wrote a bridge script that exposed each shape key to the Unity inspector, then mapped MediaPipe's output values to those fields in the tracking callback: a smile from the player increases <em>mouthSmileLeft</em> and <em>mouthSmileRight</em> (0–1) → the driver stores it → converts it to a 0–100 shape key value → the character animates using its SmileLeft and SmileRight sliders.</p>
                             <div class="detail-video">
                                 <video controls playsinline>
-                                    <source src="videos/Testing_Thrawn.mp4" type="video/mp4">
+                                    <source src="videos/Testing_Thrawn.MP4" type="video/mp4">
                                     Your browser does not support the video element.
                                 </video>
                             </div>
@@ -5103,10 +5109,10 @@
 
                             <div class="detail-pdf">
                                 <iframe
-                                    src="./documents/Sibylla_Merian_Deck.pdf"
+                                    src="https://pub-a69438c62f704426a150baba374e9066.r2.dev/Sibylla_Merian_Deck.pdf"
                                     width="100%"
-                                    height="600"
-                                    title="Sibylla Merian pitch deck">
+                                    height="900"
+                                    style="border: none;">
                                 </iframe>
                             </div>
 
