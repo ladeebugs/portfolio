@@ -750,7 +750,15 @@
             object-fit: contain;
         }
 
-        .detail-hero iframe {
+        .detail-hero.youtube-hero {
+            width: 100%;
+            max-width: 800px;
+            height: clamp(300px, 55vw, 450px);
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .detail-hero.youtube-hero iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -4677,7 +4685,7 @@
                     <h1 class="detail-title">In My Head, I Go Nowhere</h1>
                     <p class="detail-subtitle">Turning an internal state into a physical space.</p>
 
-                    <div class="detail-hero">
+                    <div class="detail-hero youtube-hero">
                         <iframe
                             src="https://www.youtube.com/embed/7dfEQpaEkbY"
                             title="Project 2"
