@@ -4003,9 +4003,83 @@
             }
         }
 
+        /* ============================================
+            DESKTOP NOTICE OVERLAY
+            Shows only below the desktop breakpoint.
+            Auto-dismisses after 5s, or on tap/click.
+            Copy this whole <style> block into your site's CSS.
+            ============================================ */
+        
+        #desktop-notice {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: #111;
+            color: #f5f5f5;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+        
+        #desktop-notice.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #desktop-notice .notice-inner {
+            max-width: 320px;
+        }
+        
+        #desktop-notice .notice-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        
+        #desktop-notice p {
+            margin: 0 0 6px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        #desktop-notice .notice-sub {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        /* Only show on mobile/tablet — adjust the max-width to match
+            your site's own "desktop" breakpoint. */
+        @media (min-width: 1024px) {
+            #desktop-notice {
+            display: none !important;
+            }
+        }
+        
+        /* Respect reduced-motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            #desktop-notice {
+            transition: none;
+            }
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- ============================================
+     Put this markup right after <body> opens.
+     ============================================ -->
+    <div id="desktop-notice" role="status" aria-live="polite">
+    <div class="notice-inner">
+        <p>This site is designed for larger screens.</p>
+        <p class="notice-sub">For the best experience, view it on a desktop or laptop.</p>
+    </div>
+    </div>
+
     <div class="container">
 
         <!-- About Me Section -->
@@ -5589,6 +5663,37 @@
             render();
         
         })();
+    </script>
+
+    <script>
+    // ============================================
+    // Copy this script to the end of your <body>.
+    // ============================================
+    (function () {
+        var notice = document.getElementById('desktop-notice');
+        if (!notice) return;
+    
+        var DURATION_MS = 5000;
+        var dismissed = false;
+    
+        function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
+        notice.classList.add('hide');
+        // Remove from DOM after the fade-out finishes
+        setTimeout(function () {
+            notice.remove();
+        }, 500);
+        }
+    
+        var timer = setTimeout(dismiss, DURATION_MS);
+    
+        // Let people dismiss early by tapping/clicking
+        notice.addEventListener('click', function () {
+        clearTimeout(timer);
+        dismiss();
+        });
+    })();
     </script>
 
     <script>
