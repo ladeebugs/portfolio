@@ -3022,6 +3022,11 @@
         }
 
 
+        .pdf-mobile-link {
+            display: none;
+        }
+
+
         /* ================= MOBILE ================= */
 
         @media (max-width: 700px) {
@@ -3083,6 +3088,24 @@
 
             .content {
                 padding: 40px 30px;
+            }
+
+            .detail-pdf {
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .detail-pdf iframe {
+                display: block;
+                width: 100%;
+                height: 80vh;
+                border: 0;
+            }
+
+            .pdf-mobile-link {
+                display: block;
+                width: fit-content;
+                margin: 1rem auto;
             }
         }
 
@@ -5174,6 +5197,14 @@
                                     height="600"
                                     title="Sibylla Merian final presentation script">
                                 </iframe>
+
+                                <a
+                                    class="pdf-mobile-link"
+                                    href="./documents/Sibylla_Script2.pdf"
+                                    target="_blank"
+                                    rel="noopener">
+                                    Open PDF
+                                </a>
                             </div>
 
                             <p>Finally, I designed and produced the final 77-slide
