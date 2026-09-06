@@ -3022,17 +3022,38 @@
         }
 
         .pdf-fallback-link {
-            display: none; /* hidden by default on desktop */
-            text-align: center;
-            margin-top: 12px;
-            font-size: 0.9rem;
-            text-decoration: underline;
+            display: none; /* hidden by default everywhere */
+
+            font-family: "futura-pt", sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-style: italic;
+
+            text-decoration: none;
             color: inherit;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
+
         .pdf-fallback-link:hover {
+            text-decoration: underline;
             opacity: 1;
+        }
+
+        .document-cta-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: auto;
+            padding-top: 14px;
+        }
+
+        /* remove the old margin-top:auto / padding-top from .document-cta 
+        since the row now handles that spacing */
+        #documentsGallery .document-cta {
+            margin-top: 0;
+            padding-top: 0;
         }
 
 
@@ -3981,6 +4002,10 @@
 
             .pdf-fallback-link {
                 display: block;
+            }
+
+            .document-card.is-open .pdf-fallback-link {
+                display: inline-flex;
             }
         }
 
@@ -5426,11 +5451,12 @@
                             title="Resume">
                         </iframe>
                     </div>
-                    <a class="pdf-fallback-link" href="./documents/Dina_Alkhateeb_CV.pdf" target="_blank" rel="noopener">
-                        Open full PDF
-                    </a>
-
-                        <span class="document-cta"></span>
+                        <div class="document-cta-row">
+                            <a class="document-cta" href="#"></a>
+                            <a class="pdf-fallback-link" href="./documents/Dina_Alkhateeb_CV.pdf" target="_blank" rel="noopener">
+                                Open full PDF ↗
+                            </a>
+                        </div>
 
                 </div>
 
@@ -5454,11 +5480,12 @@
                             title="Resume">
                         </iframe>
                     </div>
-                    <a class="pdf-fallback-link" href="./documents/Final_Transcript.pdf" target="_blank" rel="noopener">
-                        Open full PDF
-                    </a>
-
-                        <span class="document-cta"></span>
+                       <div class="document-cta-row">
+                        <a class="document-cta" href="#"></a>
+                        <a class="pdf-fallback-link" href="./documents/Final_Transcript.pdf" target="_blank" rel="noopener">
+                            Open full PDF ↗
+                        </a>
+                    </div>
 
                 </div>
 
