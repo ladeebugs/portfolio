@@ -40,7 +40,7 @@
             transition: flex 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
             cursor: pointer;
-            flex: 0 0 80px; /* Collapsed width */
+            flex: 0 0 80px; 
         }
 
         .section:last-child {
@@ -49,7 +49,7 @@
 
         /* Expanded state */
         .section.expanded {
-            flex: 1; /* Takes up remaining space */
+            flex: 1; 
             cursor: default;
         }
 
@@ -95,7 +95,7 @@
             font-weight: normal;
         }
 
-        /* List Items (Projects / Writing / Documents) */
+        /* List Items */
         .list-item {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid currentColor;
@@ -127,26 +127,6 @@
 
         /* ================= PROJECTS — gallery + case study ================= */
 
-        /* Gallery: a scrolling stack of summary cards. Clicking a card swaps
-           the whole panel over to that project's detail view (see below) —
-           it doesn't expand in place, since case studies carry too much
-           (images, video, long text) to sit comfortably inside a list row. */
-        /* Featured project: full-width, thumb-beside-info on desktop, so
-           the strongest piece reads as a deliberate opener rather than
-           just the first row of a list. Everything below it drops into a
-           denser grid — that size contrast IS the hierarchy signal. */
-        /* Featured project: full-width, thumb-beside-info on desktop, so
-           the strongest piece reads as a deliberate opener rather than
-           just the first row of a list. Everything below it drops into a
-           denser grid — that size contrast IS the hierarchy signal.
-
-           Card surface uses the same --card-* tokens as the grid cards
-           below (soft rounded surface + shadow instead of a hard outline)
-           so the featured piece and the grid read as one consistent
-           material, just at a different scale. --project-gap is shared
-           with .project-grid's gap so the space above/below the featured
-           card matches the rhythm between grid cards exactly, rather than
-           reading as an arbitrary extra-large gap. */
         #galleryView {
             --project-gap: 30px;
             --card-border: rgba(65, 0, 20, 0.08);
@@ -214,9 +194,6 @@
             margin-bottom: 24px;
         }
 
-        /* Grid of the remaining projects — two columns on desktop, so six
-           projects read as a compact set rather than a long scroll. Shares
-           --project-gap with the featured card's bottom margin above. */
         .project-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -247,10 +224,6 @@
             box-shadow: 0 16px 30px rgba(65, 0, 20, 0.1);
         }
 
-        /* Small running index — this set genuinely is an ordered gallery
-           (featured piece first, then reverse-chronological), so the
-           number carries real information about where a card sits in
-           that order, not just decoration. */
         .project-index {
             position: absolute;
             top: 24px;
@@ -262,14 +235,6 @@
             opacity: 0.4;
         }
 
-        /* Placeholder thumbnail — an inset, rounded panel sitting inside
-           the card's own padding (rather than bleeding to the card edges),
-           which is what makes the card read as one soft object rather than
-           a bordered box. The gentle two-tone wash keeps an empty
-           placeholder feeling considered rather than broken; swap the
-           whole element for an <img> or <video> (object-fit: cover, same
-           height/radius) once real media exists — the wash and label text
-           can go. */
         .project-thumb {
             position: relative;
             width: 100%;
@@ -336,8 +301,6 @@
             border-radius: var(--thumb-radius);
         }
 
-        /* Slow, understated zoom on the thumbnail rather than the whole
-           card moving — reads as a considered detail instead of a bounce. */
         .project-card:hover .project-thumb,
         .project-featured:hover .project-thumb {
             transform: scale(1.035);
@@ -348,9 +311,6 @@
             transform: scale(1.02);
         }
 
-        /* Small ceremony marker for standout projects (capstones, awards,
-           etc.) — pin to a corner of the thumbnail. Optional; only add
-           .project-badge where it's actually warranted. */
         .project-badge {
             position: absolute;
             top: 14px;
@@ -390,10 +350,6 @@
             margin-bottom: 8px;
         }
 
-        /* Titles move to the sans display face used elsewhere for headers
-           (about-me's big labels) rather than the body serif — a sharper,
-           more contemporary contrast against the still-serif description
-           text below it. */
         .project-title {
             font-family: "futura-pt", sans-serif;
             font-weight: 600;
@@ -464,10 +420,6 @@
             margin: 0 auto 36px;
         }
 
-        /* Subtle, staggered entrance — cards settle in rather than simply
-           appearing, without calling attention to itself. Applied by JS
-           each time the gallery becomes visible (see revealGallery()).
-           Respects reduced-motion below. */
         .project-featured,
         .project-card {
             opacity: 0;
@@ -501,12 +453,7 @@
             }
         }
 
-        /* ============================================================
-        THIS SITE, TOO.
-        A deliberate break from the project-card system.
-        The website doesn't need a case study because the viewer
-        is already experiencing the project.
-        ============================================================ */
+        /* THIS SITE, TOO. */
 
         .site-project {
             width: 100%;
@@ -524,9 +471,6 @@
 
             color: inherit;
         }
-
-
-        /* ---------- heading ---------- */
 
         .site-project-heading {
             display: flex;
@@ -557,8 +501,6 @@
         }
 
 
-        /* ---------- description ---------- */
-
         .site-project-body {
             display: flex;
             flex-direction: column;
@@ -575,9 +517,6 @@
             line-height: 1.65;
             letter-spacing: -0.01em;
         }
-
-
-        /* ---------- metadata ---------- */
 
         .site-project-meta {
             display: flex;
@@ -644,10 +583,6 @@
             }
         }
 
-        /* Case-study detail view. One of these (or the shared "coming soon"
-           stub) is shown at a time; everything else — including the whole
-           gallery — is display:none. See showProjectDetail() / showGallery()
-           in the script below. */
         .detail-view {
             display: none;
         }
@@ -674,20 +609,14 @@
             text-decoration: underline;
         }
 
-        /* ---- Spacing scale used throughout the case-study detail view ----
-           --gap-tight (8px):  two elements that read as one unit (a title
-                                and the subtitle directly under it, a fact's
-                                label and its value).
+        /* ---- Spacing scale ----
+           --gap-tight (8px):  two elements that read as one unit 
            --gap-base  (20px): the default rhythm between any two stacked
                                 elements inside a section (paragraph to
                                 paragraph, paragraph to image, etc.) — see
                                 the ".detail-section > * + *" rule below.
-           --gap-major (40px): separation between major blocks — the hero,
-                                the facts strip, the downloads row, and each
-                                top-level section (h2) from the next.
-           Every rule below reduces to one of these three numbers rather
-           than a one-off value, so spacing reads as intentional instead of
-           inconsistent. */
+           --gap-major (40px): separation between major blocks */
+
         .detail-view {
             --gap-tight: 8px;
             --gap-base: 20px;
@@ -776,9 +705,6 @@
             line-height: 0.95;
         }
 
-        /* Simple meta line, for projects that don't need the fuller
-           .detail-facts spec block below. Pairs tightly with .detail-tags
-           right after it, then a major gap before the body. */
         .detail-meta {
             width: 100%;
             max-width: 1000px;
@@ -808,10 +734,6 @@
             gap: var(--gap-major);
         }
 
-        /* Punchy one-line hook under the title (e.g. a tagline or thesis
-           sentence) — optional, only used when a project has one. Sits
-           tight against the title, then a major gap before whatever
-           metadata block comes next. */
         .detail-subtitle {
             width: 100%;
             text-align: center;
@@ -822,9 +744,6 @@
             line-height: 1.2;
         }
 
-        /* Structured facts (role / timeframe / type / tools / hardware) for
-           projects formal enough to want a proper spec block rather than a
-           single meta line. Sits where .detail-meta would otherwise go. */
         .detail-facts {
             width: 100%;
             max-width: 1000px;
@@ -875,11 +794,6 @@
             opacity: 0.6;
         }
 
-        /* Downloadable builds — plain bordered buttons, consistent with the
-           tag/pill language used elsewhere. Point the href at the real file
-           once builds are hosted somewhere. Same major gap before the body
-           as every other top-level block, so "Project Statement" doesn't
-           end up sitting closer to this than sections sit to each other. */
         .detail-downloads {
             width: 100%;
             max-width: 1000px;
@@ -911,11 +825,6 @@
             background: rgba(65, 0, 20, 0.05);
         }
 
-        /* Every section's children (h2/h3, paragraphs, lists, quotes,
-           images, the highlight box) space themselves by this one rule —
-           the base rhythm — so nothing inside a section needs its own
-           one-off margin. Headings below override just their own top
-           margin to read as a clear break; everything else stays uniform. */
         .detail-section > * + * {
             margin-top: var(--gap-base);
         }
@@ -943,12 +852,6 @@
             opacity: 0.9;
         }
 
-        /* Sub-heading one level below .detail-section h2, for projects whose
-           sections (e.g. "The Problem") contain several named sub-steps.
-           Deliberately smaller and lighter than h2 so the hierarchy reads
-           at a glance, and pulled further from the content above it than
-           the base rhythm — like starting a fresh beat — while staying
-           close to its own paragraph below. */
         .detail-section h3 {
             width: 100%;
             max-width: 700px;
@@ -965,11 +868,6 @@
             margin-top: var(--gap-major) !important;
         }
 
-        /* Editorial pull-quote treatment — used for artist/project
-           statements or other passages meant to read as a stand-alone
-           thesis rather than body copy. Slightly more room between stacked
-           quote paragraphs than plain body text, since the indent and
-           italic already read as one visual block. */
         .detail-quote {
             font-size: 1.06rem;
             line-height: 1.85;
@@ -982,9 +880,6 @@
             margin-top: 28px !important;
         }
 
-        /* Highlight box for a single pivotal beat in the narrative — a
-           turning point worth visually separating from surrounding body
-           copy rather than just another paragraph. */
         .detail-highlight {
             border: 1px solid currentColor;
             border-left: 4px solid currentColor;
@@ -1009,8 +904,6 @@
             opacity: 0.6;
         }
 
-        /* Bulleted process notes — an em-dash bullet keeps the editorial
-           voice of the rest of the type instead of a default round bullet. */
         ul.detail-list {
             width: 100%;
             max-width: 700px;
@@ -1037,9 +930,6 @@
             left: 0;
         }
 
-        /* Tools/process pipeline shown as a wrapping chain of steps — for
-           projects with a linear technical pipeline worth visualizing
-           rather than describing in prose. */
         .detail-flow {
             margin-top: 40px;
             display: flex;
@@ -1070,12 +960,6 @@
             padding: 0 4px;
         }
 
-        /* Placeholders for in-body images and video links — replace the
-           <div> with an <img>, or the <div> contents with a real <a href>
-           / <video> once you have media to link. Generous inner padding
-           and line-height so the placeholder label never crowds the
-           border; outer spacing comes from the base rhythm above, same as
-           every other element in the section. */
         .detail-image-placeholder,
         .detail-video-placeholder {
             width: 100%;
@@ -1372,9 +1256,7 @@
             text-align: center;
         }
 
-        /* =========================================================
-        CASE STUDY COMING SOON
-        ========================================================= */
+        /* CASE STUDY COMING SOON */
 
         .detail-case-study-note {
             width: calc(100% - 120px);
@@ -1431,18 +1313,8 @@
         }
 
 
-         /* ================= WRITING — minimal essay gallery ================= */
+         /* WRITING */
  
-        /* Deliberately quieter cousin of the projects gallery: same card
-           anatomy (thumbnail, meta, title, description, CTA) but a single
-           consistent grid with no featured/case-study split, since each
-           essay links out to the full piece rather than opening an in-page
-           case study. Tokens are scoped to this section's own accent
-           (E6BDDF on #3D5071) rather than reusing the cream section's
-           maroon-based rgba values, so the surface still reads as native
-           to this panel's palette. Staggered-reveal keyframe and timing
-           are shared with the projects gallery via .writing-card being
-           included in that rule set above — same system, one accent swap. */
         #writingGallery {
             --writing-gap: 24px;
             --writing-border: rgba(230, 189, 223, 0.22);
@@ -1457,9 +1329,7 @@
         }
  
 
-        /* ================= WRITING — ESSAY READER ================= */
-
-        /* The PDF reader is hidden until an essay is selected. */
+        /* WRITING — ESSAY READER */
 
         .essay-reader {
             display: none;
@@ -1467,9 +1337,6 @@
             max-width: 1000px;
             margin: 0 auto;
         }
-
-
-        /* Back button */
 
         .essay-back {
             display: inline-flex;
@@ -1502,8 +1369,6 @@
         }
 
 
-        /* Essay title area */
-
         .essay-header {
             width: 100%;
             text-align: center;
@@ -1531,9 +1396,6 @@
 
             margin: 0;
         }
-
-
-        /* PDF frame */
 
         .essay-frame {
             width: 100%;
@@ -1563,8 +1425,6 @@
             border: none;
         }
 
-
-        /* ================= WRITING CARDS ================= */
 
         .writing-grid {
             display: flex;
@@ -1616,8 +1476,6 @@
         }
 
 
-        /* Thumbnail */
-
         .writing-thumb {
             position: relative;
             flex: 0 0 30%;
@@ -1646,8 +1504,6 @@
             border: none;
         }
 
-
-        /* Information */
 
         .writing-info {
             flex: 1;
@@ -1718,23 +1574,7 @@
         }
 
 
-        /* ============================================================
-       ABOUT ME — reworked
-       Two states, driven by a single `activeKey`:
- 
-         - resting: illustration on the left, header list on the right.
-         - active:  illustration crossfades out, the matching detail
-           copy crossfades in in its place. The header list stays put
-           on desktop (same active/inactive styling you already had —
-           dot collapses, label goes small-caps-italic). On mobile the
-           header row moves to the bottom, and the active header
-           physically relocates to sit as a title above the copy —
-           tapping that title again sends it back to the row and
-           restores the illustration.
- 
-       Only one header can be active at a time; selecting a new one
-       swaps the others back off automatically.
-       ============================================================ */
+        /* ABOUT ME  */
 
         .about-stage {
            flex: 1;
@@ -1762,21 +1602,12 @@
             overflow: visible;
         }
 
-
-        /* Illustration and detail occupy exactly the same visual space */
-
         .about-illustration,
         .about-detail-wrap {
             position: absolute;
             inset: 0;
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
-
-        /* ============================================================
-        ABOUT ILLUSTRATION
-        Always centred within its available visual space.
-        Size scales fluidly with the viewport.
-        ============================================================ */
 
         .about-illustration {
             position: absolute;
@@ -1799,23 +1630,12 @@
         }
 
         .about-illustration img {
-            /*
-            Fluid sizing — no fixed pixel dimensions and no
-            breakpoint-specific resizing.
-            */
             width: min(55vw, 720px);
             height: auto;
-
-            /*
-            Don't let the old container width constrain the artwork.
-            */
             max-width: 100%;
 
             object-fit: contain;
 
-            /*
-            Centre the actual artwork within the available space.
-            */
             object-position: center center;
 
             flex-shrink: 1;
@@ -1827,17 +1647,12 @@
             pointer-events: none;
         }
        
-        /* ---------- revealed information ---------- */
 
         .about-detail-wrap {
             opacity: 0;
             transform: translateY(10px);
             pointer-events: none;
 
-            /*
-            Centre the information in the same visual territory
-            previously occupied by the illustration.
-            */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1867,21 +1682,9 @@
             padding-right: 20px;
         }
 
-
-        /* Title slot only gets populated on mobile */
-
         .about-title-slot:empty {
             display: none;
         }
-
-
-        /* ---------- detail content ---------- */
-
-        /* ============================================================
-        ABOUT DETAIL — editorial layouts
-        Each section has its own visual rhythm rather than behaving
-        like one large block of body copy.
-        ============================================================ */
 
         .about-detail {
             display: none;
@@ -1893,9 +1696,6 @@
         .about-detail.open {
             display: block;
         }
-
-
-        /* ---------- shared typography ---------- */
 
         .detail-eyebrow {
             display: block;
@@ -2507,9 +2307,6 @@
             gap: 12px;
         }
 
-
-        /* ---------- footer ---------- */
-
         .about-footer {
             margin-top: 50px;
             width: 100%;
@@ -2579,8 +2376,6 @@
 
         /* ============================================================
         ABOUT — INTERMEDIATE / TABLET
-        Switch to vertical layout earlier so the illustration and
-        navigation never compete for horizontal space.
         ============================================================ */
 
         @media (max-width: 1100px) {
@@ -2591,10 +2386,6 @@
                 gap: 0;
                 max-width: 900px;
             }
-
-            /* --------------------------------
-            Visual / information area
-            -------------------------------- */
 
             .about-visual {
                 width: 100%;
@@ -2607,16 +2398,8 @@
                 max-height: 100%; 
             }
 
-
-            /* --------------------------------
-            Revealed information
-            -------------------------------- */
-
             .about-detail-wrap {
-                /*
-                Give the copy the full width of the new vertical
-                composition.
-                */
+            
                 padding: 40px 0;
                 align-items: center;
                 justify-content: center;
@@ -2626,11 +2409,6 @@
                 width: 100%;
                 max-width: 760px;
             }
-
-
-            /* --------------------------------
-            Header navigation
-            -------------------------------- */
 
             .about-menu {
                 flex: 0 0 auto;
@@ -2679,11 +2457,6 @@
                 max-height: 100%; 
             }
 
-
-            /* --------------------------------
-            Detail information
-            -------------------------------- */
-
             .about-detail-wrap {
                 padding: 24px 0;
                 align-items: center;
@@ -2694,11 +2467,6 @@
                 width: 100%;
                 max-width: none;
             }
-
-
-            /* --------------------------------
-            Header row
-            -------------------------------- */
 
             .about-menu {
                 gap: 10px 22px;
@@ -2727,11 +2495,6 @@
                 font-size: 1.4rem;
                 transform: none;
             }
-
-
-            /* --------------------------------
-            Mobile selected header
-            -------------------------------- */
 
             .about-title-slot {
                 width: 100%;
@@ -2777,7 +2540,6 @@
             }
         }
 
-        /* Scrollbar styling - HIDDEN */
         .content::-webkit-scrollbar {
             display: none;
         }
@@ -2788,7 +2550,6 @@
         }
 
         /* Different background colors for each section */
-        /* About Me - Sage Green */
         .section:nth-child(1) {
             background: #c3789b;
             color: #F8EEE5;
@@ -2895,8 +2656,6 @@
         }
 
 
-        /* Information */
-
         .document-info {
             display: flex;
             flex-direction: column;
@@ -2969,9 +2728,6 @@
             text-decoration: underline;
         }
 
-
-        /* ================= DOCUMENT READER ================= */
-
         .document-reader {
             display: none;
 
@@ -3000,9 +2756,6 @@
             border: none;
         }
 
-
-        /* Open state */
-
         .document-card.is-open {
             cursor: default;
 
@@ -3023,7 +2776,7 @@
         }
 
         .pdf-fallback-link {
-            display: none; /* hidden by default everywhere */
+            display: none; 
 
             font-family: "futura-pt", sans-serif;
             font-size: 0.72rem;
@@ -3049,8 +2802,6 @@
             padding-top: 14px;
         }
 
-        /* remove the old margin-top:auto / padding-top from .document-cta 
-        since the row now handles that spacing */
         #documentsGallery .document-cta {
             margin-top: 0;
             padding-top: 0;
@@ -3122,9 +2873,6 @@
         }
 
          @media (max-width: 700px) {
-            /* Projects: cards already stack thumbnail-over-info by default;
-               just shrink the media placeholders on narrow screens so they
-               don't force extra scrolling. */
 
             .detail-hero {
                 width: 100%;
@@ -3355,12 +3103,7 @@
         
         /* ============================================================
         MOBILE / iOS LAYOUT FIX
-        Final overrides — place at the END of the <style> block.
         ============================================================ */
-
-        /* ------------------------------------------------------------
-        1. Viewport / flex foundations
-        ------------------------------------------------------------ */
 
         html {
             width: 100%;
@@ -3374,8 +3117,7 @@
             min-height: 100%;
             overflow: hidden;
         }
-
-        /* Use the dynamic viewport on phones, with vh as fallback. */
+        
         .container {
             width: 100%;
             height: 100vh;
@@ -3388,17 +3130,12 @@
             }
         }
 
-
         /* ============================================================
         MOBILE
         ============================================================ */
 
         @media (max-width: 768px) {
 
-            /* --------------------------------------------------------
-            2. The four section bars + one expandable section
-            must fit inside the actual viewport.
-            -------------------------------------------------------- */
 
             .container {
                 height: 100vh;
@@ -3413,29 +3150,16 @@
             }
 
             .section {
-                /*
-                * Critical:
-                * allows the expanded section to shrink below the
-                * natural height of its contents.
-                */
                 min-height: 0;
                 min-width: 0;
                 flex-shrink: 1;
                 overflow: hidden;
             }
 
-            /* --------------------------------------------------------
-            MOBILE ACCORDION
-            -------------------------------------------------------- */
-
             .section {
                 min-height: 0;
                 min-width: 0;
 
-                /*
-                * Let flex interpolate between the collapsed and
-                * expanded states rather than jumping between them.
-                */
                 transition:
                     flex 0.6s cubic-bezier(0.22, 1, 0.36, 1),
                     flex-basis 0.6s cubic-bezier(0.22, 1, 0.36, 1);
@@ -3443,41 +3167,23 @@
                 overflow: hidden;
             }
 
-            /*
-            * Collapsed panels remain as the slim horizontal headers.
-            */
             .section:not(.expanded) {
                 flex: 0 1 60px;
                 min-height: 60px;
             }
 
-            /*
-            * The selected panel takes all remaining vertical space.
-            */
             .section.expanded {
                 flex: 1 1 0%;
                 min-height: 0;
 
-                /*
-                * Don't transition overflow itself — the content stays
-                * clipped while the panel physically expands.
-                */
                 overflow: hidden;
             }
 
-            /*
-            * Important: don't let the contents establish a minimum
-            * height that prevents the flex animation from shrinking.
-            */
+    
             .section > .content {
                 min-height: 0;
                 min-width: 0;
             }
-
-
-            /* --------------------------------------------------------
-            Keep the accordion animation smooth when opening/closing
-            -------------------------------------------------------- */
 
             .section .content {
                 opacity: 0;
@@ -3491,11 +3197,6 @@
                     opacity 0.3s ease 0.2s;
             }
 
-
-            /* --------------------------------------------------------
-            Prevent horizontal overflow during the animation
-            -------------------------------------------------------- */
-
             .section,
             .section > .content,
             .detail-view {
@@ -3504,55 +3205,30 @@
             }
 
 
-            /* --------------------------------------------------------
-            3. Content becomes a genuine bounded scroll container.
-            -------------------------------------------------------- */
-
             .content {
                 width: 100%;
                 min-width: 0;
                 min-height: 0;
                 height: 100%;
 
-                /*
-                * Keep the resting screen compact.
-                */
                 padding: 18px 20px;
 
-                /*
-                * Vertical scrolling belongs to the expanded panel,
-                * not the document itself.
-                */
+           
                 overflow-y: auto;
                 overflow-x: hidden;
 
-                /*
-                * Helps prevent flex children from forcing the panel
-                * wider/taller than its available space.
-                */
+              
                 overscroll-behavior: contain;
             }
 
 
-            /* --------------------------------------------------------
-            4. ABOUT ME — resting state
-            
-            Everything important should fit on the initial screen:
-            illustration
-            ↓
-            navigation
-            ↓
-            footer
-            -------------------------------------------------------- */
+            /* 4. ABOUT ME — resting state */
 
             .about-stage {
                 width: 100%;
                 min-width: 0;
                 min-height: 0;
 
-                /*
-                * The stage itself occupies all space above the footer.
-                */
                 flex: 1 1 auto;
 
                 display: flex;
@@ -3564,17 +3240,10 @@
             .about-visual {
                 width: 100%;
 
-                /*
-                * Remove the 420px / 500px minimum that was forcing
-                * short phones to overflow.
-                */
                 min-height: 0;
                 min-width: 0;
 
-                /*
-                * The visual area takes the available space above
-                * the navigation.
-                */
+          
                 flex: 1 1 auto;
 
                 overflow: hidden;
@@ -3592,10 +3261,7 @@
             }
 
             .about-illustration img {
-                /*
-                * Scale according to BOTH dimensions rather than only
-                * using viewport width.
-                */
+            
                 width: auto;
                 height: auto;
 
@@ -3606,9 +3272,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            5. About navigation
-            -------------------------------------------------------- */
+            /* 5. About navigation */
 
             .about-menu {
                 width: 100%;
@@ -3656,12 +3320,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            6. About footer
-            
-            Keep it visible in the resting state instead of letting
-            the 50px margin push it below the viewport.
-            -------------------------------------------------------- */
+            /* 6. About footer */
 
             .about-footer {
                 flex: 0 0 auto;
@@ -3680,21 +3339,14 @@
             }
 
 
-            /* --------------------------------------------------------
-            7. About selected information
-            
-            Once the user selects a header, ONLY this region scrolls.
-            -------------------------------------------------------- */
+            /* 7. About selected information */
 
             .about-stage.is-active {
                 min-height: 0;
             }
 
             .about-stage.is-active .about-visual {
-                /*
-                * The visual still occupies the same bounded area,
-                * but its detail content is now allowed to scroll.
-                */
+           
                 min-height: 0;
             }
 
@@ -3730,19 +3382,13 @@
             }
 
 
-            /* --------------------------------------------------------
-            8. Case-study horizontal overflow
-            -------------------------------------------------------- */
+            /* 8. Case-study horizontal overflow */
 
             .detail-view {
                 width: 100%;
                 max-width: 100%;
                 min-width: 0;
 
-                /*
-                * Nothing inside a case study should create a horizontal
-                * page scroll.
-                */
                 overflow-x: hidden;
             }
 
@@ -3773,9 +3419,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            9. Case-study hero media
-            -------------------------------------------------------- */
+            /* 9. Case-study hero media */
 
             .detail-hero {
                 width: 100%;
@@ -3801,9 +3445,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            10. Case-study image pairs / trios
-            -------------------------------------------------------- */
+            /* 10. Case-study image pairs / trios */
 
             .detail-image-pair,
             .detail-image-trio {
@@ -3833,9 +3475,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            11. Final documentation
-            -------------------------------------------------------- */
+            /* 11. Final documentation */
 
             .final-scene {
                 width: 100%;
@@ -3863,9 +3503,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            12. Media gallery
-            -------------------------------------------------------- */
+            /* 12. Media gallery */
 
             .detail-media-gallery {
                 width: 100%;
@@ -3878,9 +3516,6 @@
                 max-width: 100%;
                 min-width: 0;
 
-                /*
-                * Keep the gallery itself inside the phone.
-                */
                 aspect-ratio: 16 / 9;
                 height: auto;
 
@@ -3909,12 +3544,7 @@
             }
 
 
-            /* --------------------------------------------------------
-            13. PDF readers
-            
-            Don't make the iframe 80vh on a phone. The PDF viewer
-            needs to live inside a smaller bounded reader.
-            -------------------------------------------------------- */
+            /* 13. PDF readers */
 
             .detail-pdf,
             .essay-frame,
@@ -4011,10 +3641,8 @@
         }
 
 
-        /* ============================================================
-        VERY SHORT PHONES
-        e.g. iPhone landscape-ish / small-height devices
-        ============================================================ */
+        /* VERY SHORT PHONES
+        e.g. iPhone landscape-ish / small-height devices */
 
         @media (max-width: 768px) and (max-height: 700px) {
 
@@ -4045,12 +3673,7 @@
             }
         }
 
-        /* ============================================
-            DESKTOP NOTICE OVERLAY
-            Shows only below the desktop breakpoint.
-            Auto-dismisses after 5s, or on tap/click.
-            Copy this whole <style> block into your site's CSS.
-            ============================================ */
+        /* DESKTOP NOTICE OVERLAY */
         
         #desktop-notice {
             position: fixed;
@@ -4092,16 +3715,13 @@
             font-size: 13px;
             color: #F8EEE5;
         }
-        
-        /* Only show on mobile/tablet — adjust the max-width to match
-            your site's own "desktop" breakpoint. */
+
         @media (min-width: 1024px) {
             #desktop-notice {
             display: none !important;
             }
         }
         
-        /* Respect reduced-motion preference */
         @media (prefers-reduced-motion: reduce) {
             #desktop-notice {
             transition: none;
@@ -4112,9 +3732,6 @@
 </head>
 <body>
 
-    <!-- ============================================
-     Put this markup right after <body> opens.
-     ============================================ -->
     <div id="desktop-notice" role="status" aria-live="polite">
     <div class="notice-inner">
         <p>This site is designed for larger screens.</p>
@@ -4344,23 +3961,6 @@
                                  that doesn't have its own yet.
           Only one is visible at a time; script.js-equivalent below (bottom
           of file) toggles them and never touches layout elsewhere.
-
-          TO ADD A NEW PROJECT WITH ITS OWN CASE STUDY:
-            1. Duplicate a .project-card block in #galleryView, give it a
-               new unique data-project="your-id".
-            2. Duplicate the <div class="detail-view" id="detail-face-value">
-               block just below, rename its id to "detail-your-id" (must
-               match data-project exactly), and replace the content with
-               the real case study. Not every project needs every component
-               used here (facts grid, downloads, pivot highlight, flow
-               diagram, etc.) — use .detail-quote/.detail-highlight/
-               .detail-flow/.detail-list only where they genuinely fit that
-               project's structure; a simpler project can just use
-               .detail-meta + .detail-tags + plain <p> sections, as in the
-               original template.
-          Any card whose data-project has no matching "detail-<id>" element
-          automatically falls back to the shared "coming soon" stub — so new
-          cards work immediately even before you've written the case study.
         -->
         <div class="section" data-section="projects">
             <div class="section-label">PROJECTS</div>
@@ -4369,10 +3969,6 @@
                 <!-- ===== Gallery view ===== -->
                 <div id="galleryView">
                     <h1>A selection of work I'm especially proud to share.</h1>
-                    <!-- Featured: the strongest project gets a full-width
-                         hero treatment, separate from the grid below, so
-                         the panel signals "start here" instead of listing
-                         six projects as if they carry equal weight. -->
                     <div class="project-featured" data-project="face-value">
                         <div class="project-thumb project-thumb--featured">
                             <video autoplay muted loop playsinline>
@@ -4473,7 +4069,6 @@
                     </div>
                 </div>
 
-                <!-- ===== Case study: Face Value (senior capstone, fully built out) ===== -->
                 <div class="detail-view" id="detail-face-value">
                     <button class="detail-back">← Back to projects</button>
 
@@ -4490,8 +4085,6 @@
                         For further visual documentation, see the end.
                     </div>
 
-                     <!-- Placeholder download links — point these at the real
-                         build files once they're hosted somewhere. -->
                     <div class="detail-downloads">
                         <a href="#" class="download-btn">↓ Windows build</a>
                         <a href="#" class="download-btn">↓ macOS build</a>
@@ -5253,7 +4846,6 @@
                     </div>
                 </div>
 
-                <!-- ===== Shared "coming soon" stub for every other card ===== -->
                 <div class="detail-view" id="detail-placeholder">
                     <button class="detail-back">← Back to projects</button>
                     <h1 class="detail-title">Case study coming soon</h1>
